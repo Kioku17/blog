@@ -1,0 +1,54 @@
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% set url = get_uri_segments() %}
+{% set signin = func.signin()|trim %}
+
+{% if signin %}
+{% set EntryUser = 'user_'~signin %}
+{% set user = get_data(EntryUser)[0].data|json_decode %}
+
+{% set name = get_post('name') %}
+{% set avt = get_post('avatar') %}
+{% set stt = get_post('status') %}
+{% set pass,passNew,repassNew = get_post('passold'),get_post('pass'),get_post('repass') %}
+
+{% if request_method()|lower == "post" %}
+{# ====== save data profile ====== #}
+{% if name!='' and user['rename']|default(0)>'0' and name!=user['name'] and name|length<='15' %}
+{{func.add(EntryUser,'name',name)}}
+{{func.add(EntryUser,'rename',user['rename']|trim-1)}}
+{% endif %}
+{% if avt!='' and user['avt']!=avt and avt|split('/')[0]|trim in ['https:'] and avt|split('/')[2]|trim in ['i.imgur.com'] %}
+{{func.add(EntryUser,'avt',avt)}}
+{% endif %}
+{% if stt!='' and stt|length<='300' %}
+{{func.add(EntryUser,'stt',stt)}}
+{% endif %}
+{% if passNew==repassNew and passNew|length in 3..15 and func.ma_hoa(pass)==user['pass'] %}
+{{func.add(EntryUser,'pass',func.ma_hoa(passNew))}}
+{% endif %}
+{% if pass and passNew and repassNew %}
+{% if passNew==repassNew and passNew|length in 3..15 and func.ma_hoa(pass)==user['pass'] %}
+<li style="color:green">Thiết lập mật khẩu mới thành công!</li>
+{% else %}
+<li style="color:red">Thiết lập mật khẩu mới thất bại!</li>
+{% endif %}
+{% else %}
+<li style="color:green">Cập nhật thành công!</li>
+{% endif %}
+{# ====== end save ====== #}
+{% endif %}
+
+<form method="post">
+<p><b>Tên hiển thị:</b> <i>(Còn {{user['rename']|default(0)}} lần đổi tên)</i> <li><input class="form-control" placeholder="{{name|default(user['name'])}}" type="text"{% if user['rename']>'0' %} name="name"{% endif %} max="15"></li></p>
+<p><b>Ảnh đại diện:</b> [ Tải ảnh lên <a id="upload"><i class="fa fa-upload" aria-hidden="true"></i></a> ] <li><input class="form-control" placeholder="{{avt|default(user['avt'])}}" type="url" name="avatar" id="avt"></li></p>
+<p><b>Tiểu sử - Chữ ký:</b> <i>(Tối đa 300 kí tự)</i> <li><textarea class="form-control" type="text" name="status">{{stt|default(user['stt'])}}</textarea></li></p>
+
+<h3>Thay đổi mật khẩu</h3>
+<p><b>Nhập mật khẩu cũ:</b> <li><input class="form-control" type="password" name="passold" max="15"></li></p>
+<p><b>Nhập mật khẩu mới:</b> <li><input class="form-control" type="password" name="pass" max="15"></li></p>
+<p><b>Nhập lại mật khẩu mới:</b> <li><input class="form-control" type="password" name="repass" max="15"></li></p>
+<p style="text-align:center"><button type="submit" class="submit-log">Cập nhật thông tin</button></p>
+</form>
+<input style="display:none" type="file" id="f" accept="image/*">
+{% endif %}

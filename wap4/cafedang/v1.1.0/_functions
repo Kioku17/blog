@@ -1,0 +1,382 @@
+{% macro layout() %}
+  {# 
+  - hàm nhận dạng kiểu giao diện 
+  - đưa ra nhận dạng kiểu WEB nếu trình duyệt chạy trên nền tảng:
+    +) windows nt (win10, win8.1, win8, win7, win vista, win server 2003, win xp, win 2000)
+    +) windows xp (win xp)
+    +) windows me (win me)
+    +) win98, win95, win16 (win16: win3.1)
+    +) macintosh|mac os x (macOS X), mac_powerpc (macOS 9)
+    +) linux, ubuntu, kubuntu, debian, CentOS, Mandriva, SUSE, Dropline, ASPLinux, Red Hat (linux)
+  - các nền tảng khác như: ipod, ipad, iphone, android, webos, blackberry... sẽ nhận kiểu giao diện WAP
+  #}
+{% set UA = user_agent()|lower %}
+   {% if 'red hat' in UA or 'dropline' in UA or 'suse' in UA or 'mandriva' in UA or 'windows nt' in UA or 'windows xp' in UA or 'windows me' in UA or 'win98' in UA or 'win95' in UA or 'win16' in UA or 'linux' in UA and 'android' not in UA or 'ubuntu' in UA or 'kubuntu' in UA or 'debian' in UA or 'centos' in UA or 'macintosh|mac os x' in UA or 'mac_powerpc' in UA %}
+     {% set layout = 'web' %}
+   {% else %}
+     {% set layout = 'wap' %}
+  {% endif %}
+{{layout}}
+{% endmacro %}
+
+{# ================ #}
+
+{% macro online(time,stt) %}
+{% if stt %}
+{% if time < ('now'|date('U')-300) %}
+Ù uôi Tớ Ngủ Rồi ^^
+{% else %}
+Hì Tớ Đang Thức nè (๑•﹏•)
+{% endif %}
+{% else %}
+<span name="online">
+{% if time < ('now'|date('U')-300) %}
+<font color="red"><i class="fa fa-toggle-off"></i></font>
+{% else %}
+<font color="green"><i class="fa fa-toggle-on"></i></font>
+{% endif %}
+</span>
+{% endif %}
+{% endmacro %}
+
+{% macro sex(user) %}
+{% set info = get_data('user_'~user)[0].data|json_decode %}
+{% if info.sex=='male' %}
+<i class="fa fa-mars"></i>
+{% elseif info.sex=='female' %}
+<i class="fa fa-venus"></i>
+{% else %}
+<img src="https://images.weserv.nl/?url=https://i.imgur.com/a1vRKh2.jpg&w=20&h=10&output=png" alt="LGBT">
+{% endif %}
+{% endmacro %}
+
+{% macro avtdefault(user) %}
+{% set info = get_data('user_'~user)[0].data|json_decode %}
+{% if info.avt not in ['x1','x2','x3','x4','x5','x6','x7','x8','x9','x10','x11','x12','x13','x14','x15'] and info.avt!='' %}{{info.avt|default('https://i.imgur.com/Ss9yjPu.jpg')|trim}}{% elseif info.avt=='' %}https://api.adorable.io/avatars/25/{{info.nick|slice(0,1)|trim}}.png{% else %}https://valedrit.github.io/wap4/avatar/default/{{info.avt|default('x7')}}.png{% endif %}
+{% endmacro %}
+
+{% macro rights(l) %}
+{% if l=='9' %}<b><font color="red">Giám sát</font></b>{% elseif l=='8' %}<span class="right{{l}}s">Quản lý</span>{% elseif l=='7' %}<span class="right{{l}}s">SMod</span>{% elseif l=='6' %}<span class="right{{l}}s">Mod</span>{% elseif l=='5' %}<span class="right{{l}}s">Thần Thông Thái</span>{% elseif l=='4' %}<span class="right{{l}}s">Hot Boy</span>{% elseif l=='3' %}<span class="right{{l}}s">TMod</span>{% elseif l=='2' %}<span class="right{{l}}s">Photoshop</span>{% elseif l=='1' %}<span class="right{{l}}s">Hot Girl</span>{% else %}Thành viên{% endif %}
+{% endmacro %}
+
+{% macro rank(user,hide) %}
+{% import '_functions' as func %}
+{% set user=func.rwurl(user) %}
+{% set uid=get_data('user_'~user)|last.data|json_decode %}
+{% set sm=uid['sm'] %}
+{% set rights=uid['right']|default(0) %}
+{% if sm<'100' %}{% set tuluyen = 'Phàm Nhân' %}{% set u = '0' %}
+{% elseif sm<'700' %}{% set tuluyen = 'Đạo Đồng' %}{% set u = '1' %}
+{% elseif sm<'1300' %}{% set tuluyen = 'Phương Sĩ' %}{% set u = '2' %}
+{% elseif sm<'1900' %}{% set tuluyen = 'Chân Nhân' %}{% set u = '3' %}
+{% elseif sm<'2300' %}{% set tuluyen = 'Thiên Sư' %}{% set u = '4' %}
+{% elseif sm<'2700' %}{% set tuluyen = 'Địa Tiên' %}{% set u = '5' %}
+{% elseif sm<'3200' %}{% set tuluyen = 'Linh Tiên' %}{% set u = '6' %}
+{% elseif sm<'3800' %}{% set tuluyen = 'Thượng Tiên' %}{% set u = '7' %}
+{% elseif sm<'5300' %}{% set tuluyen = 'Tạo Hoá' %}{% set u = '8' %}
+{% elseif sm>'6000' %}{% set tuluyen = 'Vô Cực' %}{% set u = '9' %}
+{% endif %}
+{% if hide=='hide' %}
+{{u|trim}}
+{% else %}
+{% if hide=='color' %}<span class="user-{{u|trim}}">{{tuluyen}}</span> {% if rights|trim >= 7 %}(Thủ Thư){% endif %}{% else %}{{tuluyen}}{% endif %}
+{% endif %}
+{% endmacro %}
+
+{% macro mau_nick(user,right) %}
+{% import '_functions' as func %}
+{% set user = func.rwurl(user) %}
+{% set right = func.rank(user,'hide') %}
+{% set info = get_data('user_'~user)[0].data|json_decode %}
+{% if info.ban=='1' %}<s>{{info.name}}</s>{% else %}<span class="user-{{info['right']}}">{{info['name']}}</span>{% endif %}
+{% endmacro %}
+
+{% macro level(all,u) %}
+{% set all = all|trim %}
+{%if (all >= 0) and (all <= 15)%} {%set level='1'%} {%elseif (all >=16) and (all <= 50)%} {%set level='2'%} {%elseif (all >= 51) and (all <= 100)%} {%set level='3'%} {%elseif (all >= 101) and (all <= 300)%} {%set level='4'%} {%elseif (all >= 301) and (all <= 500)%} {%set level='5'%} {%elseif (all >= 501) and (all <= 700)%} {%set level='6'%} {%elseif (all >= 701) and (all <= 900)%} {%set level='7'%} {%elseif (all >= 901) and (all <= 1100)%} {%set level='8'%} {%elseif (all >= 1101) and (all <= 1300)%} {%set level='9'%} {%elseif (all >= 1301) and (all <= 1500)%} {%set level='10'%} {%elseif (all >= 1501) and (all <= 1700)%} {%set level='11'%} {%elseif (all >= 1701) and (all <= 1900)%} {%set level='12'%} {%elseif (all >= 1901) and (all <= 2100)%} {%set level='13'%} {%elseif (all >= 2101) and (all <= 2300)%} {%set level='14'%} {%elseif (all >= 2301) and (all <= 2500)%} {%set level='15'%} {%elseif (all >= 2501) and (all <= 2700)%} 
+{%set level='16'%} {%elseif (all >= 2701) and (all <= 2900)%} {%set level='17'%} {%elseif (all >= 2901) and (all <= 3200)%} {%set level='18'%} {%elseif (all >= 3201) and (all <= 3500)%} {%set level='19'%} {%elseif (all >= 3501) and (all <= 3800)%} {%set level='20'%} {%elseif (all >= 3801) and (all <= 4300)%} 
+{%set level='21'%} {%elseif (all >= 4301) and (all <= 4800)%} {%set level='22'%} {%elseif (all >= 4801) and (all <= 5999)%}{%set level='23'%}{%elseif (all >= 6000)%} {%set level='24'%} {%endif%}
+<img src="https://root.rains.gq/wap4/mblogbb/buariu/{{level}}.gif"> {% if u!='' %}{% else %}{{all|default(0)}}{% endif %}
+{% endmacro %}
+
+{% macro get_blog(id,value) %}
+{% set id=id|trim %}{% set entries='' %}{% for entry in get_data('blog_'~id) %}{% set entries=entries~entry.data %}{% endfor %}{% set post=entries|json_decode %}{{post[value]}}
+{% endmacro %}
+
+{% macro pre(name) %}
+{% set p = name|split('[')[1]|split(']')[0] %}
+{% set re = name|replace({(p):'','[':'',']':''}) %}
+{% if p!='' %}<span class="sad">{{p}}</span> {{re}}{% else %}{{name}}{% endif %}
+{% endmacro %}
+
+{% macro pres(text,start,end,save) %}
+{% set text,start,end=text|trim,start|trim,end|trim %}
+{% set p = text|split(start)[1]|split(end)[0] %}
+{% set re = text|replace({(p):'',(start):'',(end):''}) %}
+{% if save=='doc' %}{{re}}{% elseif save=='pre' %}{{p}}{% else %}{{text}}{% endif %}
+{% endmacro %}
+
+{% macro ma_hoa(doc) %}
+{{doc|replace({'0':'9','1':'8','2':'7','3':'6','4':'5','9':'0','8':'1','7':'2','6':'3','5':'4','a':'z',b:'y','c':'xx','d':'w','e':'v','f':'u','g':'t','h':'s','i':'r','j':'q','k':'p','l':'o','m':'n','z':'a',y:'b','x':'c','w':'d','v':'e','u':'f','t':'g','s':'h','r':'i','q':'j','p':'k','o':'l','n':'m','A':'Z',B:'Y','C':'XX','D':'W','E':'V','F':'U','G':'T','H':'S','I':'R','J':'Q','K':'P','L':'O','M':'N','Z':'A',Y:'B','X':'C','W':'D','V':'E','U':'F','T':'G','S':'H','R':'I','Q':'J','P':'K','O':'L','N':'M'})}}
+{% endmacro %}
+
+{% macro rwurl(data) %}{% spaceless %}
+{# chuyển mã hóa kí tự tiếng Việt #}
+{% set data = data|lower|trim|replace({'á':'a','à':'a','ả':'a','ã':'a','ạ':'a','ă':'a','ắ':'a','ằ':'a','ẳ':'a','ẵ':'a','ặ':'a','â':'a','ấ':'a','ầ':'a','ẩ':'a','ẫ':'a','ậ':'a','æ':'a','ä':'a','đ':'d','ð':'d','é':'e','è':'e','ẻ':'e','ẽ':'e','ẹ':'e','ê':'e','ế':'e','ề':'e','ể':'e','ễ':'e','ệ':'e','í':'i','ì':'i','ì':'i','ỉ':'i','ĩ':'i','ị':'i','ï':'i','î':'i','ó':'o','ò':'o','ỏ':'o','õ':'o','ọ':'o','ô':'o','ố':'o','ồ':'o','ổ':'o','ỗ':'o','ộ':'o','ơ':'o','ớ':'o','ờ':'o','ở':'o','ỡ':'o','ợ':'o','ö':'o','ø':'o','ú':'u','ù':'u','ủ':'u','ũ':'u','ụ':'u','ư':'u','ứ':'u','ừ':'u','ử':'u','ữ':'u','ự':'u','ü':'u','û':'u','ý':'y','ỳ':'y','ỷ':'y','ỵ':'y','ỹ':'y'}) %}
+{% set arr = data|split() %}
+{% set abc = ('1234567890qwertyuiopasdfghjklzxcvbnm') %}
+{% set azz %}{% for i in arr|keys %}{% if arr[i] in abc %}{{arr[i]}}{% else %}{% if arr[(i-1)] in abc %}-{% endif %}{% endif %}{% endfor %}{% endset %}
+{% set arr = azz|split()%}
+{% for i in arr|keys %}{% if arr[i]=='-' %}{% if arr[(i-1)] in abc and arr[(i+1)] in abc %}-{% endif %}{% else %}{{arr[i]}}{% endif %}{% endfor %}
+{% endspaceless %}{% endmacro %}
+
+{% macro get(key,v) %}{% spaceless %} 
+{% if v %}
+{{get_data_by_id(key,get_data(key)|last.id).data|json_decode[v]}}
+{% else %}
+{{get_data_by_id(key,get_data(key)|last.id).data|raw}}{% endif %}
+ {% endspaceless %}{% endmacro %}
+
+{% macro add(key,k,v) %}
+ {% set id=get_data(key)|last.id %}
+{{update_data_by_id(key,id,get_data_by_id(key,id).data|json_decode|merge({(k):v})|json_encode)}}
+{% endmacro %}
+
+{% macro del(key,v,up) %} 
+{% set data = get_data_by_id(key,get_data(key)[0].id).data %} 
+{% set id = get_data(key)[0].id %} 
+{% if up %}
+{% set d=' '~v~' @ ' %}
+{% set data=data|replace({(d):""}) %}
+{{ update_data_by_id(key,id,data) }}
+{% else %}
+ {{ delete_data_by_id(key,id) }}
+{% endif %} 
+{% endmacro %}
+
+{% macro up(key,v,up) %} 
+{% set data = get_data_by_id(key,get_data(key)[0].id).data %} 
+{% set id = get_data(key)[0].id %} 
+{% if up %}
+{% set d=' '~v~' @ ' %}
+{% set data=data|replace({(d):""}) %}
+{% if get_data_count(key) == '0' %}
+{% set save=save_data(key,d) %}
+{% else %}
+{{ update_data_by_id(key,id,' '~v~' @ '~data) }}
+{% endif %}
+{% else %}
+{% set save=save_data(key,v) %}
+{% endif %} 
+{% endmacro %}
+
+{% macro trom_up(key,v,up) %} 
+{% set data = get_data_by_id(key,get_data(key)[0].id).data %} 
+{% set id = get_data(key)[0].id %} 
+{% if up %}
+{% set d=' @ '~v~' ' %}
+{% set data=data|replace({(d):""}) %}
+{% if get_data_count(key) == '0' %}
+{% set save=save_data(key,d) %}
+{% else %}
+{{ update_data_by_id(key,id,data~' @ '~v~' ') }}
+{% endif %}
+{% else %}
+{% set save=save_data(key,v) %}
+{% endif %} 
+{% endmacro %}
+
+{% macro size(byte) %}{% if byte >= '1073741824' %}{% set show = (byte|trim/1073741824)|round(2,'floor')~' GB' %}{% elseif byte >= '1048576' %}{% set show = (byte|trim/1048576)|round(2,'floor')~' MB' %}{% elseif byte >= '1024' %}{% set show = (byte|trim/1024)|round(2,'floor')~' Kb' %}{% else %}{% set show = byte~' byte' %}{% endif %}{{show}}{% endmacro %}
+
+{% macro dow(key,v,dow) %} 
+{% set data = get_data_by_id(key,get_data(key)|last.id).data %} 
+{% set id = get_data(key)|last.id %} 
+{% if dow %} 
+{% set d=' '~v~' @ ' %} 
+{% set data=data|replace({(d):""}) %} 
+{{ update_data_by_id(key,id,data~' '~v~' @ ') }} 
+{% else %} 
+{{ update_data_by_id(key,id,v) }} 
+{% endif %} 
+{% endmacro %} 
+
+{% macro paging(trang,p,max,b) %}
+    {% if max > 1 %}
+<ol class="page-navigator">
+ {# set p=pagination.current_page %} {% set max=pagination.pages|last #}
+{% set a='<li><a href="/'~trang~'=' %}
+ {% if p>max %}{% set p=max %}a{% endif %} 
+ {% if p>1 %}
+{{a|raw}}{{p-1}}{{b}}" id="load">&lt;&lt;</a></li>
+{% endif %}
+{% if p>3 %}
+{{a|raw}}1{{b}}" id="load">1</a></li>
+{% endif %}
+{% if p>4 %}
+<li><span>...</span></li>
+{% endif %}
+{% if p>2 %}
+{{a|raw}}{{p-2}}{{b}}" id="load">{{p-2}}</a></li>
+{% endif %}
+{% if p>1 %}
+{{a|raw}}{{p-1}}{{b}}" id="load">{{p-1}}</a>
+{% endif %}
+{% if p==1 %}
+<li class="current"><a>&lt;&lt;</a></li>
+<li class="current"><a>{{p}}</a></li>
+{% elseif p==max %}
+<li class="current"><a>{{p}}</a></li>
+<li class="current"><a>&gt;&gt;</a></li>
+{% else %}
+<li class="current"><a>{{p}}</a></li>
+{% endif %}
+{% if p<max-1 %}
+{{a|raw}}{{p+1}}{{b}}" id="load">{{p+1}}</a></li>
+{% endif %}
+{% if p<max-2 %}
+{{a|raw}}{{p+2}}{{b}}" id="load">{{p+2}}</a></li>
+{% endif %}
+{% if p<max-3 %}
+<li><span>...</span></li>
+{% endif %}
+{% if p<max %}
+{{a|raw}}{{max}}{{b}}">{{max}}</a></li>
+{% endif %}
+{% if p<max %}
+{{a|raw}}{{p+1}}{{b}}">&gt;&gt;</a></li>
+{% endif %}
+</ol>
+    {% endif %}
+{% endmacro %}
+
+{% macro user(a,b) %}{% spaceless %}
+   {% set user=get_cookie('token') %}
+  {% if b %} {% set key = 'user_'~a %} 
+{% set v = b %}
+  {% else %}
+  {% set key = 'user_'~get_data_by_id('user_'~user,get_data('user_'~user)|last.id).data|raw %}
+{% set v = a %}
+  {% endif %}
+ {{get_data_by_id(key,get_data(key)|last.id).data|json_decode[v]}}
+ {% endspaceless %}{% endmacro %}
+
+{% macro ago(time_ago) %}
+{% spaceless %}
+{% set timeht="now"|date('U', 'Asia/Ho_Chi_Minh') %}
+{% set time = time_ago|date('U', 'Asia/Ho_Chi_Minh') %}
+{% set time_giay = timeht - time %}
+ {% set time_phut = (time_giay / 60 )|round(0,'floor') %}
+{% set time_day = timeht|date('z', 'Asia/Ho_Chi_Minh')-time|date('z', 'Asia/Ho_Chi_Minh') %}
+{% set fulltime = time_ago|date('d.m.Y / H:i', 'Asia/Ho_Chi_Minh') %}
+{% set minitime = time_ago|date('H:i', 'Asia/Ho_Chi_Minh') %}
+{% if time_day == 0 %}
+{% if time_giay <= 60 %}
+{{time_giay}} giây trước
+{% elseif time_phut <= 60 %}
+{{time_phut}} phút trước
+{% else %}
+Hôm nay, {{minitime}}
+{% endif %}
+{% elseif time_day == 1 %}
+Hôm qua, {{minitime}}
+{% else %}
+{{fulltime}}
+{% endif %}
+{% endspaceless %}
+{% endmacro %}
+
+{% macro token() %}{% for i in 1..30%}{{ random('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') }}{% endfor %}{% endmacro %}
+
+{% macro signin() %}{% spaceless %}{% from 'func.twig' import get,html_decode %}{% import '_functions' as func %}{% set token=get_cookie('token') %}{% set get_token = html_decode(get('token',token))|replace({'”':'"',' ':''}) %}{% if get_data_count('user_'~func.rwurl(get_token))!='0' %}{{func.rwurl(get_token)}}{% endif %}{% endspaceless %}{% endmacro %}
+
+{% macro login() %}{% spaceless %}{% from 'func.twig' import get,html_decode %}{% import '_functions' as func %}{% set token=get_cookie('token') %}{% set get_token = html_decode(get('token',token))|replace({'”':'"',' ':''}) %}{% if get_data_count('user_'~func.rwurl(get_token))!='0' %}{{func.rwurl(get_token)}}{% endif %}{% endspaceless %}{% endmacro %}
+
+{# BBCODE #}
+{% macro nick(nd,v) %}
+{% set nd=' '~nd|replace({'<br />': " <br />",'\r\n': " \r\n ",',':" ,",'.':" .",'\n': " \n ",'\r': " \r ",(' '~v):("  "~v)})|raw~' ' %}{% for nd in nd|split(' '~v) %}{% if get_data_count('user_'~nd|split(' ')|first)>0 and loop.first==false and '<' not in nd|split(' ')|first %}{% from '_functions' import get,mau_nick %}<a href="/guestbook/user?name={{ nd|split(' ')|first|lower }}">{{mau_nick(nd|split(' ')|first,get('user_'~nd|split(' ')|first,'right'))}}</a> {{nd|split(' ',2)|last|raw }}{% else %}{% if loop.first==false %}{{v}}{% endif %}{{nd|raw}}{% endif %}{% endfor %}{% endmacro %}
+
+{% macro bbcode(data) %}{% spaceless %}     
+    {% set data = data|escape %}    
+    {% set bbcode_type_1 = ('b|i|u|s') %}    
+    {% set bbcode_type_2 = ' 
+    [fa={?}][/fa] ==> <i class="fa fa-{?}" aria-hidden="true"></i>    
+    [code]{?}[/code] ==> <div class="highlight"><pre class="highlight" contenteditable="true"><code>{?}</code></pre></div>       
+    [php]{?}[/php] ==> <div class="highlight"><pre class="highlight" contenteditable="true"><code>{?}</code></pre></div>       
+    [text]{?}[/text] ==> <textarea>{?}</textarea>    
+    [tag]{?}[/tag] ==> <code>{?}</code>    
+    [red]{?}[/red] ==> <span style="color:red">{?}</span>    
+    [blue]{?}[/blue] ==> <span style="color:blue">{?}</span>    
+    [green]{?}[/green] ==> <span style="color:green">{?}</span>   
+    [c]{?}[/c] ==> <div class="c">{?}</div>       
+    [img]{?}[/img] ==> <img style="border-radius:5%; display: block; margin: 0 auto; max-width: 70%; max-height: 70%;" src="{?}" border="2" target="_blank"> 
+    [iimg]{?}[/iimg] ==> <img style="border-radius:5%; display: block; margin: 0 auto; max-width: 50%; max-height: 50%;" src="{?}" border="2" target="_blank">   
+    [imgg]{?}[/imgg] ==> <img style="border-radius:5%; display: block; margin: 0 auto; max-width: 50%; max-height: 50%;" src="{?}" border="2" target="_blank"> 
+    [center]{?}[/center] ==> <div style="text-align:center;">{?}</div>    
+    [left]{?}[/left] ==> <div style="text-align:left;">{?}</div>    
+    [right]{?}[/right] ==> <div style="text-align:right;">{?}</div>    
+    [d]{?}[/d] ==> <center><a class="demo_btn_bacsiwindows" href="{?}"><i class="fa fa-download"></i> Download</a></center>   
+   [video]{?}[/video] ==> <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/afterglowplayer@1.x"></script><video class="afterglow" id="myvideo" width="1280" height="720" data-skin="light"><source type="video/mp4" src="{?}" /></video>
+    [scloud]{?}[/scloud] ==> <iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url={?}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"></iframe> 
+    [gist]{?}[/gist] ==> <script src="{?}"></script> 
+    [mp3]{?}[/mp3] ==> <i class="fa fa-volume-up"></i> Nghe nhạc:<br/><center><audio autoplay="autoplay" controls="controls" id="audio"> <source type="audio/mpeg" src= "{?}">Your browser does not support the audio element.</audio></center>
+    ***{?}(md) ==> <hr><p>{?}</p>
+    ***{?}*** ==> <strong><em>{?}</em></strong>
+    **{?}** ==> <strong>{?}</strong>    
+    *{?}* ==> <em>{?}</em> 
+    ######{?}(md) ==> <h6>{?}</h6>   
+    #####{?}(md) ==> <h5>{?}</h5>   
+    ####{?}(md) ==> <h4>{?}</h4>   
+    ###{?}(md) ==> <h3>{?}</h3>   
+    ##{?}(md) ==> <h2>{?}</h2>   
+    #{?}(md) ==> <h1>{?}</h1>   
+    [ul]{?}[/ul] ==> <ul>{?}</ul> 
+    [ol]{?}[/ol] ==> <ol>{?}</ol> 
+    [li]{?}[/li] ==> <li>{?}</li> 
+    ' %}    
+    {% set bbcode_type_3 = '    
+    [color={?}]{?}[/color] ==> <span style="color:{?};">{?}</span>     
+    [url={?}]{?}[/url] ==> <i class="fa fa-link fa-spin"></i> <a href="{?}">{?}</a>
+    ![{?}]({?}) ==> <img alt="{?}" style="border-radius:5%; display: block; margin: 0 auto; max-width: 70%; max-height: 70%;" src="{?}" border="2" target="_blank">
+    [quote={?}]{?}[/quote] ==> <div class="c">{?}</div> <p>{?}</p> 
+    [code={?}]{?}[/code] ==> <div class="quote_container"><div class="quote_header">CODE {?}</div><div contenteditable="true" style="border:1px solid #2f3033;padding:5px;resize:vertical;background-color:#545b65;box-shadow:inset 0 2px 6px 0 rgba(0,0,0,.26);color:#c8ced4;">{?}</div></div>       
+    ' %}    
+    {% set tag = bbcode_type_1|trim|split('|') %}    
+    {% for i in tag|keys %}    
+    	{% set tag1 = data|split('['~tag[i]~']') %}    
+    	{% for u in tag1|keys %}    
+    		{% set cn = tag1[u]|split('[/'~tag[i]~']')|first %}    
+    		{% set data = data|replace({ ('['~tag[i]~']'~cn~'[/'~tag[i]~']\r\n'):('<'~tag[i]~'>'~cn~'</'~tag[i]~'> [br] ') }) %}    
+    		{% set data = data|replace({ ('['~tag[i]~']'~cn~'[/'~tag[i]~']'):('<'~tag[i]~'>'~cn~'</'~tag[i]~'> ') }) %}    
+    	{% endfor %}    
+    {% endfor %}    
+    {% set tag = bbcode_type_2|split('\n')%}    
+    {% for i in tag|keys %}    
+    	{% set tag1 = tag[i]|split('==>')|first|trim %}{% set mtag1 = tag1|split('{?}') %}    
+    	{% set tag2 = tag[i]|split('==>')|last|trim %}{% set mtag2 = tag2|split('{?}') %}    
+    	{% set ttag = data|split(mtag1[0]) %}    
+    	{% for u in ttag|keys %}    
+    		{% set cn = ttag[u]|split(mtag1[1])|first %}    
+    		{% set data = data|replace({ (mtag1[0]~cn~mtag1[1]~'\r\n'):(mtag2[0]~cn~mtag2[1]~'[br]') }) %}    
+    		{% set data = data|replace({ (mtag1[0]~cn~mtag1[1]):(mtag2[0]~cn~mtag2[1]) }) %}    
+    	{% endfor %}    
+    {% endfor %}    
+    {% set tag = bbcode_type_3|split('\n') %}    
+    {% for i in tag|keys %}    
+    	{% set tag1 = tag[i]|split('==>')|first|trim %}{% set mtag1 = tag1|split('{?}') %}    
+    	{% set tag2 = tag[i]|split('==>')|last|trim %}{% set mtag2 = tag2|split('{?}') %}    
+    	{% set ttag = data|split(mtag1[0]) %}    
+    	{% for u in ttag|keys %}    
+    		{% set cn1 = ttag[u]|split(mtag1[1])|first %}    
+    		{% set cn2 = ttag[u]|split(cn1~mtag1[1])|last|split(mtag1[2])|first %}    
+    		{% set data = data|replace({ (mtag1[0]~cn1~mtag1[1]~cn2~mtag1[2]~'\r\n'):(mtag2[0]~cn1~mtag2[1]~cn2~mtag2[2]~' [br]') }) %}    
+    		{% set data = data|replace({ (mtag1[0]~cn1~mtag1[1]~cn2~mtag1[2]):(mtag2[0]~cn1~mtag2[1]~cn2~mtag2[2]) }) %}    
+    	{% endfor %}    
+    {% endfor %}    
+   {% import '_functions' as func %}   
+   {% import '_functions_blog' as blog %}
+{% set data = func.nick(data,'@') %}
+{% set data=blog.bb_diary(data,'quote','chat') %}
+{% set data = blog.bb_tag(data,'search') %}
+{{blog.smile(data|replace({'<[>': '[','<:>': ':','<@>':'@','<=>':'=','[br]':'<br />','<enter>' :'
+',' ,':',',' .':'.'}))|raw}}    
+      {% endspaceless %}{% endmacro %}

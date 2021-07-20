@@ -1,0 +1,76 @@
+{% use '_widget' %}
+{% use '_includes' %}
+{% import '_functions' as func %}
+{% import '_functions_blog' as blog %}
+{% from 'function.twig' import add,mi_add,slug,time,description %}
+{% from 'func.twig' import mi_get,mi_up,k_del,get,html_decode %}
+{% set login = func.signin()|trim %}
+{% set user = get_data('user_'~login)[0].data|json_decode %}
+{% set layout = func.layout()|trim %}
+{% set time_now="now"|date("H:i","Asia/Ho_Chi_Minh") %}
+{% set hour=time_now|split(':')[0] %}
+{% set uri = get_uri_segments() %}
+{% set idc=uri[1]|split('-')|first|trim %}
+{% set name = get('category_'~idc,'ten') %}
+{% set keywords = get('category_'~idc,'key') %}
+{% set description = get('category_'~id,'content') %}
+{% if name!='' %}
+{% set title,current = name,name %}
+{{block('head')}}
+{% set widget_content %}
+
+{% set data = mi_get('show_category_'~idc)|split(' @ ')|reverse  %}
+{% set per = '10' %}
+{% set total=data|length-1 %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set url = get_uri_segments() %}
+{% set p=get_get('p')|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+{% if total == '0' %}
+<section class="widget"> <h3>{{name}}</h3><div>Chua có bài viết nào</div></section>
+{% else %}
+{% if layout=='wap' %}
+<section class="widget"> <h3>{{name}}</h3></section>
+{% endif %}
+{% for i in data|slice(0,total)|slice(st,per) %}
+{% set entries='' %}{% for entry in get_data('blog_'~i) %}{% set entries=entries~entry.data %}{% endfor %}
+{% set post=entries|json_decode %}
+{% set name = post.title %}
+{% set ten = name %}
+{% set id = post['id'] %}
+{% set category = post['category'] %}
+{% set slug = post['slug'] %}
+{% set cat = get('category_'~category,'ten') %}
+{% set time = post['time'] %}
+{% set view = post['view'] %}
+{% set content = post['content'] %}
+{% set thumb = post['thumb'] %}
+{% set content = get('blog_'~i,'content','raw') %}
+{% set mota = description(content) %}
+{% set description = (description(content|split('[desc]')[1]|split('[/desc]')[0])|default(mota))|striptags|slice(0,100) %}
+{% set thumb = get('blog_'~i,'thumb')|trim %}
+{% set cmt = get('blog_'~i,'comment_num')|trim %}
+{% set cat2 = get('blog_'~i,'content')|split('[search]')[1]|split('[/search]')[0] %}
+{% set pre = name|split('[')[1]|split(']')[0] %}
+<article class="post type-post" > <h2 class="post-title"><a href="{{current_url|split('/').0~"//"~current_url|split('/').2}}/library/{{id}}-{{slug}}/">{% if pre!='' %}{{name|replace({(pre):'','[':'',']':''})}}{% else %}{{name}}{% endif %}</a></h2> <ul class="post-meta"> <li><i class="fa fa-book" aria-hidden="true"></i> Thể loại: {% set cat_hide %}{% if ten|split('[')[1]|split(']')[0]!='' or content|split('[search]')[1]|split('[/search]')[0]!='' %}{% for search in cat2|lower|split(', ') %}{% if (ten|split('[')[1]|split(']')[0])|lower != search %}{{search|capitalize}}{% if loop.last == false %}, {% endif %}{% endif %}{% endfor%}{% if (ten|split('[')[1]|split(']')[0])|lower != '' and (cat2|split(', ')|length-1) >= '1' and (ten|split('[')[1]|split(']')[0])|lower not in cat2|split(', ') %}, {% endif %}{{ten|split('[')[1]|split(']')[0]|lower|capitalize}}{% else %} Chưa phân loại{% endif %}{% endset %}{{cat_hide|replace({", , ":", "})}}</li> <li><i class="fa fa-clock-o" aria-hidden="true"></i> Đăng lúc: {{time(time)}}</li></ul> <div class="post-content"> <p>{{description}}...</p> </div> </article>
+{% endfor %}
+{% endif %}
+{{func.paging(''~url|join('/')~'?p',p,page_max)}}
+
+{% endset %}
+{{block('sidebar_left')}}
+{% set widget_content %}{{block('sidebar_right_content')}}{% endset %}
+{{block('sidebar_right')}}
+{{block('end')}}
+{% else %}
+{% include 'index.php' %}
+{% endif %}

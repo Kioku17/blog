@@ -1,0 +1,16 @@
+{% import '_functions' as func %}
+{% set on=func.get('show_online')|trim %}
+{% set online = {} %}
+{% for v in on|split('@') %}
+{% if loop.last==false %}
+{% if func.get('user_'~v|trim,'on')|trim > "now"|date("U")-300 %}
+{% set list_on %}<a href="/guestbook/user?name={{v|trim}}">{{func.mau_nick(v|trim,func.get('user_'~v|trim,'right'))}}</a>{% endset %}
+{% set online=online|merge({(v|trim):list_on}) %}
+{% else %}
+{{func.del('show_online',v|trim,'up')}}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% set signin = func.signin()|trim %}
+{% set udata = get_data('user_'~signin)[0].data|json_decode %}
+{#{%if not get_data('stats')%}{%set x,x=save_data('stats',','),save_data('stats',',')%}{%endif%}{%set day,time=(now|date('U')+24750)|date('d'),now|date('U')+24750%}{%set s=get_data('stats')%}{%if 'Googlebot' in user_agent()%}{%set g,b=1,'Google'%}{%else%}{%set u=1%}{%endif%}{%set ss=s.0.data|split(',')%}{%if day!=ss.0%}{%set ss=''%}{%endif%}{%set sr=s.1.data|split(',')%}{%if sr.12 and time-sr[sr|length//3]>600%}{%set sr=s.1.data|split(sr[sr|length//3]).1|trim(',')%}{%elseif sr[sr|length-3] and time-sr[sr|length-3]>600%}{%set sr=sr[sr|length-3]~','~sr[sr|length-2]%}{%elseif time-sr[sr|length-2]>600%}{%set sr=sr[sr|length-2]%}{%else%}{%set sr=''%}{%endif%}{%set sd=s.1.data|replace({(','~sr~','):','})|replace({(','~get_cookie('stats')~','):','})%}{%if get_cookie('stats') and get_cookie('stats')|date('dmY')!=time|date('dmY')%}{%set f=1%}{%endif%}{%if not get_cookie('stats') or f%}{{update_data_by_id('stats',s.0.id,day|escape~','~(ss.1+u)|escape~','~(ss.2+f)|escape~','~(ss.3+g)|escape)}}{%endif%}{%if time-get_cookie('stats')>300 and time not in s.1.data%}{{update_data_by_id('stats',s.1.id,(','~time~b~sd))}}{{set_cookie('stats',time)}}{%endif%}#}{%set s=get_data('stats')%}{%set go,s0=s.1.data|split('Google')|length-1,s.0.data|split(',')%}{%if go>=1 %}, {{go}} <span style="color:#1849b5">G</span><span style="color:#de3018">o</span><span style="color:#efbA00">o</span><span style="color:#1849b5">g</span><span style="color:#31b639">l</span><span style="color:#de3018">e</span>{%endif%}{% set onl = s.1.data|split(',')|length-2-go %}{% if (onl-(online|length))>0 %} và {{onl-(online|length)}} vị khách khác{% endif %} {% if udata['right']>=7 and signin %}<br/>Lượt khách ghé thăm hôm nay: <b>{{s0.1|number_format(0,'.','.')}}</b>{% endif %}

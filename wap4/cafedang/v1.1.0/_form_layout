@@ -1,0 +1,5 @@
+{# {% if get_get('theme') in ['red','black','blue','green'] %}
+{{set_cookie('theme',get_get('theme'))}}
+{% endif %} #}
+<div id="myModal" style="display:none;position:fixed;z-index:1;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:#000;background-color:rgba(0,0,0,0.4)"><section class="widget" style="margin:15% auto;margin-top:30%;padding:20px;border:1px solid #888;width:80%"> <h3>Cài đặt giao diện</h3><ul class="widget-list"><span class="close"></span><form method="get">{% for i in ['red','black','blue','green'] %}<li><input type="radio" name="theme" value="{{i|trim}}"{% if get_cookie('theme')|default('black')==i %} checked{% endif %}> Giao diện {% if i=='red' %}Đỏ{% elseif i=='blue' %}màu Lam{% elseif i=='green' %}Xanh lá{% elseif i=='black' %}Đen cá tính{% endif %}</li>{% endfor %}<li><button stype="submit">Thay đổi</button></li></form></ul></section>
+</div>

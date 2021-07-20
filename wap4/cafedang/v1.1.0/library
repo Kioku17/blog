@@ -1,0 +1,243 @@
+{% use '_includes' %}
+{% use '_widget' %}
+{% import '_functions' as func %}
+{% import '_functions_blog' as blog %}
+{% from 'function.twig' import add,mi_add,slug,time,description %}
+{% from 'func.twig' import mi_get,mi_up,k_del,get,html_decode %}
+{% set login = func.signin()|trim %}
+{% set user = get_data('user_'~login)[0].data|json_decode %}
+{% set layout = func.layout()|trim %}
+{% set time_now="now"|date("H:i","Asia/Ho_Chi_Minh") %}
+{% set hour=time_now|split(':')[0] %}
+{% set uri = get_uri_segments() %}
+{% if uri[1]=='' or uri[1]==null %}
+{% include 'index.php' %}
+{% else %}
+{% set id=uri[1]|split('-')|first %}
+{% set chapter = get('blog_'~id,'chap') %}
+{% if get('blog_'~id,'title') %}
+{% set author = func.rwurl(get('blog_'~id,'author')) %}
+{% set pre = get('blog_'~id,'title')|split('[')[1]|split(']')[0] %}
+{% set clear_pre %}{% if pre!='' %}{{get('blog_'~id,'title')|replace({(pre):'','[':'',']':''})}}{% else %}{{get('blog_'~id,'title')}}{% endif %}{% endset %}
+{% if chapter >= '1' and get_get('chap') >= '1' %}
+{% set title_chap %}{% if "chương" not in get('blog_'~id~'_chap_'~get_get('chap'),'title')|lower and "chap" not in get('blog_'~id~'_chap_'~get_get('chap'),'title')|lower %}{% endif %} {{get('blog_'~id~'_chap_'~get_get('chap'),'title')}}{% endset %}
+{% set title = clear_pre~' - '~title_chap %}
+{% else %}
+{% set title = clear_pre %}
+{% endif %}
+{% set time = get('blog_'~id,'time')|trim %}
+{% set view = get('blog_'~id,'view')|trim %}
+{% set content = get('blog_'~id,'content','raw') %}
+{% set category = get('blog_'~id,'category') %}
+{% set author = func.rwurl(get('blog_'~id,'author')) %}
+{% set author_data = get_data('user_'~author)[0].data|json_decode %}
+{% set nameid = get('category_'~category,'ten') %}
+{% if chapter>='1' and get_data_count('blog_'~id~'_chap_'~get_get('chap'))!='0' %}
+{% set current %}{% if clear_pre|length>'15' %}{{clear_pre|slice(0,15)}}...{% else %}{{clear_pre}}{% endif %}{% endset %}
+{% else %}
+{% set current,currentUrl = nameid,'category/'~category~'-'~get('category_'~category,'slug') %}
+{% endif %}
+{% set go = mi_add('blog_'~id,{"view":(view+1)}) %}
+{% set go = add('top_view','blog_'~id,(view+1)) %}
+{% set mota = description(content) %}
+{% set description = (description(get('blog_'~id,'content','raw')|split('[desc]')[1]|split('[/desc]')[0])|default(mota))|striptags|slice(0,200) %}
+{% set imgDefault = get('blog_'~id,'content')|split('[img]')[1]|split('[/img]')[0]|default('https://i.imgur.com/QirNeqE.jpg') %}
+{% set img = get('blog_'~id,'thumb')|default(imgDefault) %}
+{{block('head')}}
+
+{% set widget_content %}
+<article class="post"> <h1 class="post-title ta-c">{{clear_pre}}</h1> <ul class="post-meta ta-c"> {% if func.get('member')|trim|split('@')|length-1 > '1' %} <li><i class="fa fa-user" aria-hidden="true"></i> <a href="/guestbook/user?name={{author}}">{% if author_data['ban'] =='1' %}<s>{{author_data['name']}}</s>{% else %}{{func.mau_nick(author,author_data['right'])}}{% endif %}</a></li>{% endif %} <li><i class="fa fa-book" aria-hidden="true"></i> Thể loại: <a href="{{current_url|split('/').0~"//"~current_url|split('/').2}}/category/{{category}}-{{slug(nameid)}}/">{{nameid}}</a>{% if pre!=null or pre!='' %}, {{pre}}{% endif %}</li> <li><i class="fa fa-clock-o" aria-hidden="true"></i> Đăng lúc: {{time(time)}}</li> <li><i class="fa fa-eye" aria-hidden="true"></i> {{view}} lượt xem</li> {% if login==author or user['right']>='7' %}<center><p>Công cụ: <a href="/manager/edit/{{id}}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Chỉnh sửa</a> / <a href="?chap=add"><i class="fa fa-plus-circle" aria-hidden="true"></i> Thêm chương</a> / <a href="/leech/chapter?blogID={{id}}"><i class="fa fa-telegram" aria-hidden="true"></i> Leech bài viết</a>{% if user['right']>='7' %} / <a href="/manager/delete/{{id}}"><i class="fa fa-trash-o" aria-hidden="true"></i> Xóa bỏ</a> {% endif %}</p></center>{%endif %}</ul> 
+<div class="post-content">
+<p>
+{% if get_get('chap')=='add' and login==author or get_get('chap')=='add' and user['right']>='7' %}
+
+<div class="menu comment-content">
+<p align="center"><b>Thêm chương mới, id chương: </b>{{get('blog_'~id,'chap')|trim+1}}</p>
+</div>
+{% set name = get_post('name_chap')|striptags|slice(0,300)|trim %}
+{% set content = get_post('content') %}
+{% if name and content %}
+{% set id_add = get('blog_'~id,'chap')|trim+1 %}
+{% set data={'id':id_add,'title':name|slice(0,300),'content':content,'time':'now'|date('U', 'Asia/Ho_Chi_Minh')} %}
+{% if mi_add('blog_'~id~'_chap_'~id_add,(data))%}
+{{func.trom_up('blog_'~id~'_chap',id_add,'up')}}
+{{func.add('blog_'~id,'chap',id_add)}}
+<div class="gmenu">Thêm chương thành công</div>
+<script>window.location.href='/library/{{id}}-{{get('blog_'~id,'slug')}}/?chap={{id_add}}'</script>
+<META HTTP-EQUIV="Refresh" CONTENT="0;URL=/library/{{id}}-{{get('blog_'~id,'slug')}}/?chap={{id_add}}">
+{% endif %}
+{% endif %}
+<form action="" method="post">
+<div class="list-login"><b><i class="fa fa-gg" aria-hidden="true"></i> Tiêu đề chap:</b> <input type="text" name="name_chap" value="" maxlength="300" style="height:100%; width:100%"></div>
+<div class="list-login"><b><i class="fa fa-newspaper-o" aria-hidden="true"></i> Nội dung:</b> <i>(có thể sử dụng bbcode, <a href="/smile">smile</a>)</i> <textarea id="trumbowyg" name="content" rows="25"></textarea></div>
+<div class="list-login"><center><button type="submit" class="button">Thêm chương</button></form></center></div>
+
+{% else %}
+{# không thêm chap #}
+{% if not get_get('chap') or get_get('chap')<'0' %}
+{{blog.bbcode(content)}}
+{% else %}
+<style>a.chap{padding: 4px 6px;background: #E74946;border-radius: 5px;color: #fff;margin: 2px 0px;display: inline-block;}</style>
+{% set get_chap = get_data('blog_'~id~'_chap_'~get_get('chap'))[0].data|json_decode %}
+<p align="center"><b>{% if login==author and get_get('act')=='edit' and get_data_count('blog_'~id~'_chap_'~(get_get('chap')-1))!='0' or user['right']>='7' and get_get('act')=='edit' and get_data_count('blog_'~id~'_chap_'~(get_get('chap')-1))!='0' %}Chỉnh sửa chương:{% elseif "chương" not in get('blog_'~id~'_chap_'~get_get('chap'),'title')|lower and "chuong" not in get('blog_'~id~'_chap_'~get_get('chap'),'title')|lower and "chap" not in get('blog_'~id~'_chap_'~get_get('chap'),'title')|lower and "chương" not in get('blog_'~id~'_chap_'~chapter,'title')|lower and "chuong" not in get('blog_'~id~'_chap_'~chapter,'title')|lower and "chap" not in get('blog_'~id~'_chap_'~chapter,'title')|lower%}Chương:{% endif %} {% if get_get('chap')>chapter %}{{get('blog_'~id~'_chap_'~chapter,'title')}}{% else %}{{get('blog_'~id~'_chap_'~get_get('chap'),'title')}}{% endif %}</b></p>
+
+{% if login==author and get_get('act')=='edit' and get_data_count('blog_'~id~'_chap_'~get_get('chap'))!='0' or user['right']>='7' and get_get('act')=='edit' and get_data_count('blog_'~id~'_chap_'~get_get('chap'))!='0' %}
+{% set name = get_post('name_chap')|striptags|slice(0,300)|trim %}
+{% set content = get_post('content') %}
+{% if request_method()|lower == "post" %}
+{% set key = 'blog_'~id~'_chap_'~get_get('chap') %}
+{% set data = {'id':get_get('chap'),'title':get_post('name_chap'),'content':content,'time':get(key,'time')} %}
+{{mi_add(key,(data))}}
+Chỉnh sửa thành công!
+<script>window.location.href='/library/{{id}}-{{get('blog_'~id,'slug')}}/?chap={{get_get('chap')}}'</script>
+<META HTTP-EQUIV="Refresh" CONTENT="0;URL=/library/{{id}}-{{get('blog_'~id,'slug')}}/?chap={{get_get('chap')}}">
+{% endif %}
+
+<form action="" method="post">
+<div class="list-login"><b><i class="fa fa-gg" aria-hidden="true"></i> Tiêu đề chap:</b> <input type="text" name="name_chap" value="{{get('blog_'~id~'_chap_'~get_get('chap'),'title')}}" maxlength="300" style="height:100%; width:100%"></div>
+<div class="list-login"><b><i class="fa fa-newspaper-o" aria-hidden="true"></i> Nội dung:</b> <i>(có thể sử dụng bbcode, <a href="/smile">smile</a>)</i> <textarea id="trumbowyg" name="content" rows="25">{{get('blog_'~id~'_chap_'~get_get('chap'),'content','raw')}}</textarea></div>
+<div class="list-login"><center><button type="submit" class="button">Đồng ý chỉnh sửa</button></center></div></form>
+
+{% else %}
+{# chapter #}
+{% if login==author and get_get('act')!='edit' and get_data_count('blog_'~id~'_chap_'~get_get('chap'))!='0' or user['right']>='7' and get_get('act')!='edit' and get_data_count('blog_'~id~'_chap_'~get_get('chap'))!='0' %}
+<p align="right"><a href="?chap={{get_get('chap')}}&act=edit">
+<i class="fa fa-pencil-square-o" aria-hidden="true"></i> Chỉnh sửa chương này</a></p>
+{% endif %}
+{% if get_get('chap')>chapter %}
+{{blog.bbcode(get('blog_'~id~'_chap_'~chapter,'content','raw'))}}
+{% else %}
+{{blog.bbcode(get('blog_'~id~'_chap_'~get_get('chap'),'content','raw'))}}
+{% endif %}
+{# end chapter #}
+{# ==========#}
+{% endif %}
+{# không thêm chap #}
+{% endif %}
+{% endif %}
+</p>
+</div>  
+<ul class="post-near"> 
+{% set p = get('blog_'~id,'title')|split('[')[1]|split(']')[0] %}
+{% set re = get('blog_'~id,'title')|replace({(p):'','[':'',']':''}) %}
+<li>{% if chapter >= '1' and get_get('chap')!='add' %}
+{% if get_get('chap') in ['0','',null] or get_get('chap')<'0' %}
+<p align="center"><a href="?chap=1">[Đọc từ đầu]</a></p>
+{% else %}
+
+{% set data= func.get('blog_'~id~'_chap')|trim|split('@')|reverse %}
+{% if get_get('chap')==(data|length-1) %}<div align="left"><a class="chap" href="?chap={{get_get('chap')-1}}">quay lại</a></div>{% elseif get_get('chap')=='1' %}<div align="right"><a class="chap" href="?chap={{get_get('chap')+1}}">đọc tiếp</a></div>{% elseif get_get('chap')>chapter %}<div align="left"><a class="chap" href="?chap={{get('blog_'~id,'chap')|trim-1}}">quay lại</a></div>{% else %}<div align="center"><a class="chap" href="?chap={{get_get('chap')-1}}">quay lại</a> <a class="chap" href="?chap={{get_get('chap')+1}}">đọc tiếp</a></div>{% endif %}
+
+{% endif %}
+{% else %}<i class="fa fa-tags" aria-hidden="true"></i> Từ khóa: {% if p=='' %}{% for k in get('blog_'~id,'title')|replace({',':'','&quot;':''})|split(' ') %}<a href="/search.php?key={{k}}">{{k|lower}}</a>{% if loop.last==false %}, {% endif %}{% endfor %}{% else %}{% for k in (p~''~re)|replace({',':'','&quot;':''})|split(' ') %}<a href="/search.php?key={{k}}">{{k|lower}}</a>{% if loop.last==false %}, {% endif %}{% endfor %}{% endif %}{% endif %}</li>
+</ul> </article>
+
+{% endset %}
+{{block('sidebar_left')}}
+
+{% set widget_content %}
+<section class="widget"> <h3 class="widget-title">Chia sẻ bài viết</h3> <ul class="widget-list"><li><input type="text" value="{{current_url}}{% if get_get('chap')>='1' and chapter>='1' %}?chap={{get_get('chap')}}{% endif %}"></li><li><input type="text" value="[url={{current_url}}{% if get_get('chap')>='1' and chapter>='1' %}?chap={{get_get('chap')}}{% endif %}]{{title|raw}}[/url]"></li></ul></section>
+{% if chapter >= '1' %}
+<div class="fixsidebar">
+<section class="widget"> <h3 class="widget-title">Danh sách chương</h3> <ul class="widget-list">
+{% set data= func.get('blog_'~id~'_chap')|trim|split('@')|reverse %}
+{% set total=data|length-1 %} 
+ {% set page_max=total//20 %}
+{% if total//20 != total/20 %}
+{% set page_max=total//20+1 %}
+{% endif %}
+{% set p=get_get('p')|default(1) %} 
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*20-20 %}
+{% for i in data|slice(0,total)|slice(st,20) %}
+{% set chap = get_data('blog_'~id~'_chap_'~i|trim)[0].data|json_decode %}
+<li><a href="{{current_url|split('/').0~"//"~current_url|split('/').2}}/library/{{id}}-{{get('blog_'~id,'slug')}}/?chap={{i|trim}}{% if get_get('p') >= '1' %}&p={{get_get('p')}}{% endif %}"> {% if get_get('chap') == i|trim %}[Đang đọc]{% else %}»{% endif %} {{get('blog_'~id~'_chap_'~i|trim,'title')}}</a></li>
+{% endfor %}
+</ul></section>
+{% if chapter >= '1' %}
+{{func.paging(uri|join('/')~'?chap='~get_get('chap')~'&p',p,page_max)}}
+{% else %}
+{{func.paging(uri|join('/')~'?p',p,page_max)}}
+{% endif %}
+
+{#{% if layout=='web' %}
+{% set key = 'list_category' %}
+{% set data = mi_get(key) %}
+<section class="widget"> <h3 class="widget-title">Chuyên mục</h3> <ul class="widget-list">
+{% for i in data|split(' @ ')|reverse %}
+{% set cmm = get('category_'~i,'ten') %}
+{% set idcmm = get('category_'~i,'id') %}
+{% set slugcmm = get('category_'~i,'slug') %}
+{% if loop.last==false %}
+<li><a href="{{current_url|split('/').0~"//"~current_url|split('/').2}}/category/{{idcmm}}-{{slugcmm}}/">{{cmm}}</a></li>
+{% endif %}
+{% endfor %}
+</ul></section>
+{% endif %}#}
+</div>
+<div id="fixed"></div>
+{% else %}
+{{block('sidebar_right_content')}}
+{% endif %}
+{% endset %}
+{{block('sidebar_right')}}
+
+{% if login==author and get_get('act') == 'edit' or user['right']>='7' and get_get('act') == 'edit' or login==author and get_get('chap') == 'add' or user['right']>='7' and get_get('chap') == 'add' %}
+<style>.button{background-color:#e7e7e7;border:none;color:#000;padding:15px 32px;text-align:center;text-decoration:none;display:inline-block;font-size:16px;margin:4px 2px;cursor:pointer}</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/trumbowyg.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/pasteembed/trumbowyg.pasteembed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/cleanpaste/trumbowyg.cleanpaste.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/upload/trumbowyg.upload.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/colors/trumbowyg.colors.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/ui/trumbowyg.min.css" />
+
+<script>
+$('#trumbowyg').trumbowyg({
+{#autogrowOnEnter: true,#}
+    btnsDef: {
+        // Create a new dropdown
+        image: {
+            dropdown: ['insertImage', 'upload'],
+            ico: 'insertImage'
+        }
+    },
+    btns: [
+        ['undo', 'redo'],
+        ['formatting'],
+        ['strong', 'em', 'del'],
+        ['foreColor', 'backColor'],
+        ['link'],
+        ['image'],
+        ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+        ['viewHTML']
+
+
+    ],
+    plugins: {
+        // Add imagur parameters to upload plugin for demo purposes
+        upload: {
+            serverPath: 'https://api.imgur.com/3/image',
+            fileFieldName: 'image',
+            headers: {
+                'Authorization': 'Client-ID 21ca8b31c6adc09'
+            },
+            urlPropertyName: 'data.link'
+        }
+    }
+});
+       
+</script>
+{% endif %}
+
+{{block('end')}}
+{% else %}
+{% include 'index.php' %}
+{% endif %}
+{% endif %}

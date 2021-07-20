@@ -1,0 +1,93 @@
+{% block nav_menu %}
+{% import '_functions' as func %}{% set signin = func.signin()|trim %}
+{% set url = get_uri_segments() %}
+{% if ul=='li' %}<li>{% endif %}<a class="{% if not ul %}{% if url[0] in ['index.php','',null] %}current{% endif %} {% endif %}waves-effect waves-button waves-classic" href="/index.php" id="home">Trang chủ</a>{% if ul=='li' %}</li><li>{% endif %}<a class="{% if not ul %}{% if url[0]=='guestbook' %}current{% endif %} {% endif %}waves-effect waves-button waves-classic" href="/guestbook">Phòng chat</a>{% if ul=='li' %}</li>{% endif %}{% if signin %}{% if ul=='li' %}<li>{% endif %}<a class="{% if not ul %}{% if url[0]=='user' %}current{% endif %} {% endif %}waves-effect waves-button waves-classic" href="/logout.php">Đăng xuất</a>{% if ul=='li' %}</li>{% endif %}{% if func.get('user_'~signin,'right')>='7' %}{% if ul=='li' %}<li>{% endif %}<a class="{% if not ul %}{% if url[0] in ['manager','leech'] %}current{% endif %} {% endif %}waves-effect waves-button waves-classic" href="/manager">Quản trị</a>{% if ul=='li' %}</li>{% endif %}{% endif %}{% else %}{% if ul=='li' %}<li>{% endif %}<a class="{% if not ul %}{% if url[0]=='login.php' %}current{% endif %} {% endif %}waves-effect waves-button waves-classic" href="/login.php">Đăng nhập</a>{% if ul=='li' %}</li>{% endif %}{% if ul=='li' %}<li>{% endif %}<a class="{% if not ul %}{% if url[0]=='registration.php' %}current{% endif %} {% endif %}waves-effect waves-button waves-classic" href="/registration.php">Đăng ký</a>{% if ul=='li' %}</li>{% endif %}{% endif %}{% if current!='' and url[0] in ['library','category'] and not ul %}<a class="current waves-effect waves-button waves-classic" href="/{% if currentUrl!='' %}{{currentUrl}}{% else %}{{url|join('/')}}{% endif %}">{{current}}</a>{% endif %}{% if url[0] in ['index.php',''] %}{% if ul=='li' %}<li>{% endif %}<a class="waves-effect waves-button waves-classic" id="myBtn">Cài đặt</a>{% if ul=='li' %}</li>{% endif %}{% endif %}
+{% endblock %}
+
+{% block sidebar_left %}
+<div class="grid-3-4" id="main" role="main">
+{{widget_content}}
+</div>
+{% endblock %}
+
+{% block sidebar_right %}
+<aside class="grid-1-4" id="secondary" role="complementary">
+{{widget_content}}
+</aside>
+{% endblock %}
+
+{% block sidebar_right_content %}
+{% import '_functions' as func %}
+{% from 'function.twig' import slug,description,time %}
+{% from 'func.twig' import mi_get,get,html_decode %}
+{% set layout = func.layout()|trim %}
+{% set url = get_uri_segments() %}
+{% set signin = func.signin()|trim %}
+{% set user = get_data('user_'~signin)[0].data|json_decode %}
+{% set run = get_data('forum')[0].data|json_decode %}
+{% set login = signin %}
+{% set on=func.get('show_online')|trim %}
+{% set online = {} %}
+{% for v in on|split('@') %}
+{% if loop.last==false %}
+{% if func.get('user_'~v|trim,'on')|trim > "now"|date("U")-300 %}
+{% set list_on %}<b>{{func.mau_nick(v|trim,func.get('user_'~v|trim,'right'))}}</b>{% endset %}
+{% set online=online|merge({(v|trim):list_on}) %}
+{% else %}
+{{func.del('show_online',v|trim,'up')}}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% if layout=='web' %}
+ <section class="widget widget_search"> <h3>Tìm kiếm</h3> <form id="search" method="get" action="/search.php" role="search"> <input type="text" class="text" {% if url[0]=='search.php' %}name="{% if get_get('author') and not get_get('key') %}author{% else %}key{% endif %}" value="{% if get_get('author') and not get_get('key') %}{{get_get('author')}}{% else %}{{get_get('key')}}{% endif %}" placeholder="Nhập {% if get_get('author') and not get_get('key') %}tên tác giả{% else %}từ khóa{% endif %} cần tìm..."{% else %}name="key" placeholder="Nhập từ khóa"{% endif %} id="search-input"/> <button type="submit" class="submit">Tìm kiếm</button> </form> <ul class="widget-list"><div id="results-container"></div></ul> </section>
+{% endif %}
+<div class="fixsidebar">
+{% if url[0]=='guestbook' %}
+
+{% set item = 'xc' %}
+<section class="widget"> <h3 class="widget-title">TOP {% if item=='xu' %}Đại gia{% else %}Xếp chữ{% endif %}</h3> <ul class="widget-list">
+{% set UrlHost = 'https://root.rains.gq' %}{% set item = item|trim %}{% import '_functions' as func %}{% set data=[] %}{% set data = func.get('member')|trim|split('@')|merge(data) %}{% set listitem %}{% for i in data %}{% set user = i|trim %}{% set uid = get_data('user_'~user)|last.data|json_decode %}{% if user!='apple' %}{{uid[item]|default(0)}}#{% endif %}{% endfor %}{% endset %}{% set listuser %}{% for i in data %}{% set user = i|trim %}{% set uid = get_data('user_'~user)|last.data|json_decode %}{% if user!='apple' %}{{user}}#{{uid[item]|default(0)}}.{% endif %}{% endfor %}{% endset %}{% set listtop %}{% for i in listitem|split('#')|sort|reverse %}{% for top in listuser|split('.') %}{% if '#'~i in top %}{{top}}.{% endif %}{% endfor %}{% endfor %}{% endset %}{% set list=[] %}{% for i in listtop|split('.') %}{% if i not in list %}{% set list=list|merge([i]) %}{% endif %}{% endfor %}{% for i in list|slice(0,6) %}{% set person = i|split('#')[0] %}{% set u = get_data('user_'~func.rwurl(person))|last.data|json_decode %}{% if loop.last==false %}<div class="list1"><img src="{{UrlHost}}/wap4/icon/level/{{loop.index}}.png" title="top{{loop.index}}" style="width:15px;height:15px"> <a href="/guestbook/user?name={{func.rwurl(u['nick'])}}">{{func.mau_nick(func.rwurl(person),u['level'])}}</a><span style="font-weight:bold;float:right">{{u[item]|default(0)}} {% if item=='xc' %}điểm{% else %}xu{% endif %}</span></div>{% endif %}{% endfor %}
+</ul></section>
+
+{% else %}
+
+{% set key = 'list_category' %}
+{% set data = mi_get(key) %}
+<section class="widget widget-category type-post"> <h3 class="widget-title">Chuyên mục</h3> <ul class="widget-list">
+{% for i in data|split(' @ ')|reverse %}
+{% set cmm = get('category_'~i,'ten') %}
+{% set idcmm = get('category_'~i,'id') %}
+{% set slugcmm = get('category_'~i,'slug') %}
+{% if loop.last==false %}
+<li><a href="{{current_url|split('/').0~"//"~current_url|split('/').2}}/category/{{idcmm}}-{{slugcmm}}/">{{cmm}}</a></li>
+{% endif %}
+{% endfor %}
+</ul></section>
+
+{% endif %}
+{% if url[0] in ['index.php','guestbook','',null] and signin %}
+<section class="widget"> <h3 class="widget-title">Thống kê truy cập</h3> <ul class="widget-list"><li>Trực tuyến: {{online|sort|join(', ')|raw}}{% include '_stats' %}</li></ul></section>
+{% endif %}
+</div>
+<div id="fixed"></div>
+{% endblock%}
+
+{% block sidebar_right_contentNotLogin %}
+{% set url = get_uri_segments() %}
+<div class="fixsidebar">
+<section class="widget"> <h3 class="widget-title">Tùy chọn tài khoản</h3> <ul class="widget-list">
+{% if url[0]=='login.php' %}
+<li><a href="/registration.php">» Đăng ký</a></li>
+{% if get_get('act')=='getUser' %}
+<li><a href="/login.php">» Đăng nhập</a></li>
+{% else %}
+<li><a href="/login.php?act=getUser">» Quên mật khẩu?</a></li>
+{% endif %}
+{% elseif url[0]=='registration.php' %}
+<li><a href="/login.php">» Đăng nhập</a></li>
+<li><a href="/login.php?act=getUser">» Quên mật khẩu?</a></li>
+{% endif %}
+</ul></section>
+</div>
+<div id="fixed"></div>
+{% endblock %}

@@ -1,0 +1,276 @@
+{% use '_includes' %}
+{% use '_widget' %}
+{% set site_basic = (current_url|split('/').0~"//"~current_url|split('/').2) %}
+{% import '_functions' as func %}
+{% from 'function.twig' import get,add,mi_add,slug,id,mi_get,mi_up,time,mi_del %}
+{% from 'func.twig' import mi_get,mi_up,mi_del,k_del %}
+{% set url=get_uri_segments() %}
+{% set login = func.signin()|trim %}
+{% set user = get_data('user_'~login)[0].data|json_decode %}
+{% set library = get_data('library')[0].data|json_decode %}
+{% if login %}
+{{block('head')}}
+{% set widget_content %}
+<section class="widget"><h3>Leech Nội dung</h3><ul class="widget-list">
+{% if url[1]=='post' and get_get('catID')!='' and get_data_count('category_'~get_get('catID'))!='0' or url[1]=='chapter' and get_get('blogID')!='' and get_data_count('blog_'~get_get('blogID'))!='0' %}
+<style>.button{background-color:#e7e7e7;border:none;color:#000;padding:15px 32px;text-align:center;text-decoration:none;display:inline-block;font-size:16px;margin:4px 2px;cursor:pointer}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/trumbowyg.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/pasteembed/trumbowyg.pasteembed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/cleanpaste/trumbowyg.cleanpaste.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/upload/trumbowyg.upload.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/colors/trumbowyg.colors.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/ui/trumbowyg.min.css" />
+{% endif %}
+{% if url[1]=='post' %}
+<li style="font-weight:700"><i class="fa fa-bars"></i> Leech về chuyên mục</li>
+{% if get_get('catID')!='' and get_data_count('category_'~get_get('catID'))!='0' %}
+{#===Xử lý===#}
+{% set data1 = mi_get('show_blog')|split(' @ ')|last %}
+{% set slug1 = get('blog_'~data1,'slug') %}
+{% set ten = get_post('ten')|striptags|slice(0,300)|trim %}
+{% set idcm = get_get('catID') %}
+{% set content = get_post('content') %}
+{% set thumb = get_post('thumb') %}
+{% if ten and content and idcm %}
+{% set slug=slug(ten)|default('post')|trim %}
+{% set id = get('ID','blog')|trim+1 %}
+{% set data={'title':ten|slice(0,300),'slug':slug,'content':content,'time':'now'|date('U', 'Asia/Ho_Chi_Minh'),'category':idcm,'id':id,'thumb':thumb|default(''),'view':1,'author':login|default('apple')} %}
+{% if slug1 == slug %}
+Bài viết bị trùng
+{% else %}
+{% if mi_add('blog_'~id,(data)) %}
+{{mi_up('show_blog',id)}}
+{{mi_up('show_category_'~idcm,id)}}
+{{mi_add('ID',{"blog":(id)})}}
+<li style="color:green">Đăng bài viết thành công</li>
+<script>window.location.href='/library/{{id}}-{{slug}}'</script>
+<META HTTP-EQUIV="Refresh" CONTENT="0;URL=/library/{{id}}-{{slug}}">
+{% endif %}
+{% endif %}
+{% endif %}
+{#===Kết thúc===#}
+
+<form action="" method="post">
+<li><b><i class="fa fa-link" aria-hidden="true"></i></b> URL bài viết gốc: <i>(hiện tại chỉ hỗ trợ leech từ: truyentv.net)</i><br/><input class="form-control" type="text" id="urlchapter" style="height:100%; width:100%"> <input type="button" value="Fetch" onclick="layNoiDung()"></li>
+<li><b><i class="fa fa-gg" aria-hidden="true"></i> Tiêu đề:</b> <i>(có thể sử dụng tiền tố: [thể loại] tiêu đề bài viết)</i></li><li> <input class="form-control" type="text" name="ten" value="" maxlength="300" style="height:100%; width:100%" id="title"></li>
+<li><b><i class="fa fa-newspaper-o" aria-hidden="true"></i> Nội dung:</b> <i>(có thể sử dụng bbcode)</i><div>Đối với truyện, các bạn có thể thống kê 1 số yếu tố như sau: tác giả, thể loại, tình trạng<br/><b>Tác giả:</b> [author]tên tác giả[/author]<br/><b>Thể loại:</b> [search]danh sách thể loại[/search] <i>(Các thể loại truyện ngăn cách nhau bởi dấu phẩy. Ví dụ: Tự truyện, Truyện kinh dị, ATSM)</i><br/><b>Giới thiệu:</b> [desc]mô tả ngắn[/desc]</div></li> <li><textarea id="trumbowyg" name="content" rows="25"></textarea></li>
+<li><center><button type="submit" class="button">Đăng bài</button></center></li>
+</form>
+{#===tool leech===#}
+<script>
+   function validURL(str) {
+     var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+      '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+      '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+      '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+     return !!pattern.test(str);
+   }
+
+   function layNoiDung() {
+     var urlchapter = $("#urlchapter").val();
+
+     if(validURL(urlchapter) == false)
+     {
+       alert('Url không hợp lệ');
+       return;
+     }
+
+     var check_truyentv_net = urlchapter.includes("truyentv.net");
+     var check_truyenx_net = urlchapter.includes("truyenx.net");
+
+     if(check_truyentv_net == true || check_truyenx_net == true){
+       fetch('https://web.scraper.workers.dev/?url='+urlchapter+'&selector=title%2C+.ndtruyen&scrape=text&pretty=true')
+         .then(response => response.json())
+         .then(body => {
+           var data = JSON.parse(JSON.stringify(body));
+           var title = data.result["title"];
+           var content = data.result[".ndtruyen"];
+           $("#title").val(title);
+           $("#trumbowyg").val(content);
+           //console.log('Success:', title);
+         })
+         .catch();
+     }    
+     else{
+       alert('Tên mền không được hỗ trợ');
+     }
+   }
+</script>
+{#===kết thúc===#}
+{% else %}
+{% set category = mi_get('list_category')|split(' @ ') %}
+<li style="text-align:center"><form method="get"><p>Chọn chuyên mục:<br/><select name="catID">{% for i in category|reverse %}{% if loop.last==false %}<option value="{{get('category_'~i,'id')}}">{{get('category_'~i,'ten')}}</option>{% endif %}{% endfor %}</select></p><p><button type="submit">Kiểm tra</button></p></form></li>
+{% endif %}
+{% elseif url[1]=='chapter' %}
+{% set entries='' %}{% for entry in get_data('blog_'~get_get('blogID')) %}{% set entries=entries~entry.data %}{% endfor %}
+{% set post=entries|json_decode %}
+<li style="text-align:center"><i class="fa fa-pencil" aria-hidden="true"></i> Leech chương/chapter về bài viết{% if get_get('blogID')!='' and get_data_count('blog_'~get_get('blogID'))!='0' %}: <b>{{post['title']}}</b>{% endif %}</li>
+<li><b>Thông tin bài viết:</b><br/>- Tên: {{post['title']}} <i>({{post['chap']|default(0)}} chương)</i><br/>- ID chương đang leech: {{post['chap']|default(0)+1}}</li>
+{% if get_get('blogID')!='' and get_data_count('blog_'~get_get('blogID'))!='0' %}
+{#===Xử lý===#}
+{% set id = get_get('blogID') %}
+{% set name = get_post('name_chap')|striptags|slice(0,300)|trim %}
+{% set content = get_post('content') %}
+{% if name and content %}
+{% set id_add = post['chap']|trim+1 %}
+{% set data={'id':id_add,'title':name|slice(0,300),'content':content,'time':'now'|date('U', 'Asia/Ho_Chi_Minh')} %}
+{% if mi_add('blog_'~id~'_chap_'~id_add,(data))%}
+{{func.trom_up('blog_'~id~'_chap',id_add,'up')}}
+{{func.add('blog_'~id,'chap',id_add)}}
+<li style="color:green">Thêm chương thành công</li>
+<script>window.location.href='/library/{{id}}-{{get('blog_'~id,'slug')}}/?chap={{id_add}}'</script>
+<META HTTP-EQUIV="Refresh" CONTENT="0;URL=/library/{{id}}-{{get('blog_'~id,'slug')}}/?chap={{id_add}}">
+{% endif %}
+{% endif %}
+{#===kết thúc===#}
+
+<form action="" method="post">
+<li><b><i class="fa fa-link" aria-hidden="true"></i></b> URL bài viết gốc: <i>(hiện tại chỉ hỗ trợ leech từ: bachngocsach com, truyen.tangthuvien.vn, vi.blogtamsu.com)</i><br/><input class="form-control" type="text" id="urlchapter" style="height:100%; width:100%"> <input type="button" value="Fetch" onclick="layNoiDung()"></li>
+<li><b><i class="fa fa-gg" aria-hidden="true"></i> Tiêu đề chap:</b></li><li><input type="text" name="name_chap" value="" maxlength="300" style="height:100%; width:100%" class="form-control" id="title"></li>
+<li><b><i class="fa fa-newspaper-o" aria-hidden="true"></i> Nội dung:</b> <i>(có thể sử dụng bbcode)</i></li><li><textarea id="trumbowyg" name="content" rows="25"></textarea></li>
+<p><center><button type="submit" class="button">Thêm chương</button></center></p>
+</form>
+
+
+{#===tool leech===#}
+<script>
+   function validURL(str) {
+     var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+      '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+      '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+      '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+     return !!pattern.test(str);
+   }
+
+   function layNoiDung() {
+     var urlchapter = $("#urlchapter").val();
+
+     if(validURL(urlchapter) == false)
+     {
+       alert('Url không hợp lệ');
+       return;
+     }
+
+     var check_bachngocsach_com = urlchapter.includes("bachngocsach.com");
+     var check_vi_blogtamsu_com = urlchapter.includes("vi.blogtamsu.com");
+     var check_truyen_tangthuvien_vn = urlchapter.includes("truyen.tangthuvien.vn");
+
+     if(check_bachngocsach_com == true){
+       fetch('https://web.scraper.workers.dev/?url='+urlchapter+'&selector=%23chuong-title%2C+%23noi-dung&scrape=text&pretty=true')
+         .then(response => response.json())
+         .then(body => {
+           var data = JSON.parse(JSON.stringify(body));
+           var title = data.result["#chuong-title"];
+           var content = data.result["#noi-dung"];
+           $("#title").val(title);
+           $("#trumbowyg").val(content);
+           //console.log('Success:', title);
+         })
+         .catch();
+     }    
+
+     else if(check_vi_blogtamsu_com == true){
+       fetch('https://web.scraper.workers.dev/?url='+urlchapter+'&selector=.chapter-title%2C+.chapter-c&scrape=text&pretty=true')
+         .then(response => response.json())
+         .then(body => {
+           var data = JSON.parse(JSON.stringify(body));
+           var title = data.result[".chapter-title"];
+           var content = data.result[".chapter-c"];
+           $("#title").val(title);
+           $("#trumbowyg").val(content);
+           //console.log('Success:', data);
+         })
+         .catch();
+     } 
+
+     else if(check_truyen_tangthuvien_vn == true){
+       fetch('https://web.scraper.workers.dev/?url='+urlchapter+'&selector=h2%2C+.box-chap&scrape=attr&attr=&pretty=true')
+         .then(response => response.json())
+         .then(body => {
+           var data = JSON.parse(JSON.stringify(body));
+           var title = data.result["h2"];
+           var content = data.result[".box-chap"];
+           $("#title").val(title);
+           $("#trumbowyg").val(content);
+           //console.log('Success:', data);
+         })
+         .catch();
+     } 
+     else{
+       alert('Tên mền không được hỗ trợ');
+     }
+   }
+</script>
+{#===kết thúc===#}
+{% else %}
+<div class="menu" align="center"><form method="get">Nhập ID bài viết:<br/><input type="number" name="blogID"><br/><button type="submit">Kiểm tra</button></form></div>
+{% endif %}
+{% else %}
+<div class="list-login"><a href="/leech/post">Bài viết theo chuyên mục</a></div>
+<div class="list-login"><a href="/leech/chapter">Bài viết theo chương/chapter</a></div>
+{% endif %}
+{% if url[1]=='post' and get_get('catID')!='' and get_data_count('category_'~get_get('catID'))!='0' or url[1]=='chapter' and get_get('blogID')!='' and get_data_count('blog_'~get_get('blogID'))!='0' %}
+<script>
+$('#trumbowyg').trumbowyg({
+{#autogrowOnEnter: true,#}
+    btnsDef: {
+        // Create a new dropdown
+        image: {
+            dropdown: ['insertImage', 'upload'],
+            ico: 'insertImage'
+        }
+    },
+    btns: [
+        ['undo', 'redo'],
+        ['formatting'],
+        ['strong', 'em', 'del'],
+        ['foreColor', 'backColor'],
+        ['link'],
+        ['image'],
+        ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+        ['viewHTML']
+
+
+    ],
+    plugins: {
+        // Add imagur parameters to upload plugin for demo purposes
+        upload: {
+            serverPath: 'https://api.imgur.com/3/image',
+            fileFieldName: 'image',
+            headers: {
+                'Authorization': 'Client-ID 21ca8b31c6adc09'
+            },
+            urlPropertyName: 'data.link'
+        }
+    }
+});
+       
+</script>
+</ul></section>
+{% endif %}
+{% endset %}
+{{block('sidebar_left')}}
+{% set widget_content %}
+<div class="fixsidebar">
+<section class="widget"><h3><i class="fa fa-tachometer" aria-hidden="true"></i> Quản trị</h3><ul class="widget-list">
+<li><a href="/leech/post"><i class="fa fa-telegram" aria-hidden="true"></i> Leech bài viết</a></li>
+<li><a href="/manager/?act=right"><i class="fa fa-cog" aria-hidden="true"></i> Cấp phép quyền đăng bài</a></li>
+<li><a href="/manager/post"><i class="fa fa-cog" aria-hidden="true"></i> Viết bài mới</a></li>
+<li><a href="/manager/created-category"><i class="fa fa-cog" aria-hidden="true"></i> Tạo thư mục</a></li>
+<li><a href="/manager/list"><i class="fa fa-cog" aria-hidden="true"></i> Danh sách bài viết</a></li>
+{# <li><a href="/manager/category-sort"><i class="fa fa-cog" aria-hidden="true"></i> Sắp xếp chuyên mục</a></li> #}
+<li><a href="http://www.google.com/ping?sitemap={{site_basic}}/sitemap.xml"><i class="fa fa-sitemap" aria-hidden="true"></i> Cập nhật khai báo Sitemap</a></li>
+</ul></section>
+</div>
+<div class="fixed"></div>
+{% endset %}
+{{block('sidebar_right')}}
+{{block('end')}}
+{% else %}
+{% include '_404' %}
+{% endif %}
