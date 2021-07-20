@@ -58,7 +58,7 @@ window.location.href="/";
 {# ============ #}
 {% if func.rwurl(user)=='admin' %}{% set rUser = '9' %}{% elseif func.rwurl(user)=='apple' %}{% set rUser = '3' %}{% else %}{% set rUser = '0' %}{% endif %}
 {% set data={"id":run.account|trim+1,"name":name_user|default(user),"nick":user,"pass":func.ma_hoa(pass)|trim,"right":rUser,"xu":"0","luong":"0","avt":"x1","token":token,"reg":"now"|date("U"),"like":0,"postforum":0,"sex":sex,"rename":3} %}
-{% set status = save_data_captcha("user_"~func.rwurl(user),data|json_encode) %}
+{% set status = save_data('user_'~func.rwurl(user),data|json_encode) %}
 <h3>Dữ liệu thông tin</h3>
 <li><b>Tài khoản:</b> {{user}} </li>
 <li><b>Mật khẩu:</b> {{pass}} </li>
