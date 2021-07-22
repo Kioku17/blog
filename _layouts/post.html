@@ -2,12 +2,13 @@
 layout: default
 ---
 <div class="phdr"><a href="/"><i class="fa fa-home" aria-hidden="true"></i> Trang chủ</a> » <span itemscope itemtype="https://schema.org/CreativeWork">{{ page.title }}</span></div>
-         {{ content }}
 
-   <section class="author-box" itemprop="author" itemscope itemtype="https://schema.org/Person">
-      <img src="https://images.weserv.nl/?url={{ site.avatar }}&w=100&h=100&t=square&q=90" class='avatar avatar-70 photo' height='70' width='70' />
-      <h4 class="author-box-title">Tác giả: <span itemprop="name">{{ site.author }}</span></h4>
-      <div class="author-box-content" itemprop="description">
-         <p>"{{ site.quotes }}".</p>
-      </div>
-   </section>
+<div itemprop="author" itemscope itemtype="https://schema.org/Person">
+<div class="blog_info"><div class="thumb_blog"><img src="https://images.weserv.nl/?url={{ site.avatar }}&w=120&h=120&mask=circle" alt="Avatar" width="60px" height="60px"></div>
+<div class="more_info"><span class="row tit"><i class="fa fa-github"></i> <a href="/author" itemprop="name">{{ site.author }}</a></span><span class="row more"><i class="fa fa-clock-o"></i>  06.02.2021 / 19:07</span> 
+<span class="row more"><label><a href="http://www.facebook.com/sharer.php?u=#" target="_blank" title="Share Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+<a href="http://twitter.com/share?url=#>&text=Simple Share Buttons" target="_blank" title="Share Twitter"><i class="fa fa-twitter-square fa-2x"></i></a></label></span></div></div>
+</div>
+<div class="list1">
+         {{ content }}
+</div>
