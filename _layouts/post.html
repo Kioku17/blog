@@ -1,93 +1,9 @@
 ---
 layout: default
 ---
-
-<div class="site-inner">
-<div class="content-sidebar-wrap">
-<main class="content">
-   <div class="breadcrumb"><span><span><a href="/">Trang chủ</a> » <span class="breadcrumb_last">{{ page.title }}</span></span></span></span></div>
-   <article itemscope itemtype="https://schema.org/CreativeWork">
-      <header class="entry-header">
-         <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase-app.js"></script>
-         <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase-database.js"></script>		
-         <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js' type="text/javascript"></script>
-         <script>
-            var firebaseConfig = {
-              apiKey: "AIzaSyDws1vKYVBerXg5NQ65JKgDcQkO-pB6leg",
-              authDomain: "bitopma-79566.firebaseapp.com",
-              databaseURL: "https://bitopma-79566.firebaseio.com",
-              projectId: "bitopma-79566",
-              storageBucket: "bitopma-79566.appspot.com",
-              messagingSenderId: "786651734042",
-              appId: "1:786651734042:web:d25ea2755714bc81cbf1a3"
-            };
-            firebase.initializeApp(firebaseConfig);
-         </script>
-         <script>
-            const rootRef = firebase.database().ref();
-            const pageCountsRef = rootRef.child("pageCounts");
-            let getHistory = new Promise(function (resolve, reject) {
-              let obj = {};
-              pageCountsRef.orderByChild("page").equalTo('{{page.slug}}').once("value", function (snapshot) {
-                snapshot.forEach(function (child) {
-                  obj = {
-                    key: child.key,
-                    count: child.val().count
-                  }
-                });
-                if (obj) {
-                  resolve(obj);
-                } else {
-                  reject(error);
-                }
-              });
-            });
-            getHistory.then(function (fromResolve) {
-              var key = fromResolve.key;
-              var pastcounts = fromResolve.count;
-              if (key == undefined) {
-                key = pageCountsRef.push().key;
-                pastcounts = 0;
-              }
-              counts = pastcounts + 1;
-              var postData = {
-                page: '{{page.slug}}',
-                count: counts,
-              }
-            
-              var updates = {}
-              updates["/pageCounts/" + key] = postData;
-              rootRef.update(updates);
-            }).catch(function (fromReject) {
-              console.log(error);
-            })
-         </script>
-         <h1><i class="fa fa-eye" aria-hidden="true"></i>
-            <span id="pageviews"></span>
-         </h1>
-         <script>
-            firebase.database().ref('pageCounts').orderByChild("page").equalTo('{{page.slug}}').on("child_added", function(snapshot) {
-                var newCount = snapshot.val().count;
-            
-                $("#pageviews").prepend(newCount);
-            }); 
-         </script>								
-         <h1 class="entry-title" itemprop="headline">{{ page.title }}</h1>
-         <p class="entry-meta">
-            <time class="entry-time" itemprop="datePublished" datetime="{{ page.date }}">{{ page.date | date: "%d/%m/%Y" }}</time> <span class="entry-author" itemprop="author" itemscope itemtype="https://schema.org/Person"><a href="/author" class="entry-author-link" itemprop="url" rel="author"><span class="entry-author-name" itemprop="name">{{ site.author }}</span></a></span> 
-         </p>
-      </header>
-      <div class="entry-content" itemprop="text">
+<div class="phdr"><a href="/"><i class="fa fa-home" aria-hidden="true"></i> Trang chủ</a> » <span itemscope itemtype="https://schema.org/CreativeWork">{{ page.title }}</span></div>
          {{ content }}
-         <style>.demo_btn_bacsiwindows{color:#7577a9!important;border:2px solid!important;overflow:hidden;position:relative;padding:10px;display:inline-block;width:230px;text-align:center;text-decoration:none!important;text-transform:uppercase;font-size:15px;font-weight:500;margin:10px 5px}.demo_btn_bacsiwindows:after{background:#7577a9;content:"";height:155px;left:-75px;opacity:2;position:absolute;top:-50px;transform:rotate(40deg);transition:.5s;width:100px;z-index:1}.demo_btn_bacsiwindows:hover:after{opacity:1;left:120%;transition:.5s}</style>
-         {% if page.demo %}
-         <div style="text-align: center;"><a rel="nofollow" class="demo_btn_bacsiwindows" href="{{page.demo}}"><i class="fa fa-eye"></i> Demo</a></div>
-         {% endif %}
-         {% if page.file %}
-         <div style="text-align: center;"><a rel="nofollow" class="demo_btn_bacsiwindows" href="https://mephimviet.gq{{page.file}}"><i class="fa fa-download"></i> Download</a></div>
-         {% endif %}
-      </div>
-   </article>
+
    <section class="author-box" itemprop="author" itemscope itemtype="https://schema.org/Person">
       <img src="https://images.weserv.nl/?url={{ site.avatar }}&w=100&h=100&t=square&q=90" class='avatar avatar-70 photo' height='70' width='70' />
       <h4 class="author-box-title">Tác giả: <span itemprop="name">{{ site.author }}</span></h4>
@@ -95,16 +11,3 @@ layout: default
          <p>"{{ site.quotes }}".</p>
       </div>
    </section>
-   {% if site.disqus_shortname %}
-   {% unless page.disqus_disabled %}
-   <div class="entry-comments" id="comments">
-      <h3>Bình luận</h3>
-      <ol class="comment-list">
-         <div id="disqus_thread"></div>
-         <script type="text/javascript">var disqus_shortname="{{ site.disqus_shortname }}";!function(){var e=document.createElement("script");e.type="text/javascript",e.async=!0,e.src="https://{{ site.disqus_shortname }}.disqus.com/embed.js",(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(e)}();</script>
-      </ol>
-   </div>
-   {% endunless %}
-   {% endif %}
-   {% include comment-section.html url=page.url %}
-</main>
