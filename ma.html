@@ -1,0 +1,124 @@
+
+<title>
+Bảo Tô
+</title>
+
+			<style>.video-wrapper{position:relative;padding-bottom:56.25%;height:0;overflow:hidden}.video-wrapper iframe{position:absolute;top:0;left:0;width:100%;height:100%}</style>
+                        <div class="video-wrapper" id="video-wrapper">	
+<iframe src="https://bitopma1.herokuapp.com/embed.php?url=Mmw5a2RxTFhYVTlzeHE0bXlFYlhsVTdEZlJKcEZ0OStEVnQ5Z1JoSHA2bEx0QjFQZGNPNng5MkpBRWdKSHVTcA==" width="100%" height="385" frameborder="0" scrolling="no" allowfullscreen></iframe>
+			</div>	
+
+
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+    <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase-database.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/trumbowyg.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/pasteembed/trumbowyg.pasteembed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/cleanpaste/trumbowyg.cleanpaste.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/upload/trumbowyg.upload.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/ui/trumbowyg.min.css" />
+<style>
+.trumbowyg-box.trumbowyg-editor-visible {
+  min-height: 50px;
+}
+
+.trumbowyg-editor {
+  min-height: 50px;
+}
+</style>
+
+    <script>
+      // Initialize Firebase
+      var config = {
+    apiKey: "AIzaSyAkxcxsifSvTSZvNxNCNaEsbAyMQl23ytU",
+    authDomain: "xzss-73ea5.firebaseapp.com",
+    databaseURL: "https://xzss-73ea5.firebaseio.com",
+    projectId: "xzss-73ea5",
+    storageBucket: "xzss-73ea5.appspot.com",
+    messagingSenderId: "563790139873",
+    appId: "1:563790139873:web:a963bd36f426b960b542a0"
+      };
+      firebase.initializeApp(config);
+    </script>
+
+
+
+<div class="phdr"><i class="fa fa-weixin" aria-hidden="true"></i> Trò chuyện </div>
+<div class="menu">
+<b><i class="fa fa-user-circle" aria-hidden="true"></i> Tên: </b><input type='text' id='nameInput' placeholder=''><br/>
+<b><i class="fa fa-list" aria-hidden="true"></i> Nội dung: </b><br/>
+
+<textarea rows="4" type= "text" id="messageInput"></textarea>
+<script>
+$('#messageInput').trumbowyg({
+autogrowOnEnter: true,
+    btnsDef: {
+        // Create a new dropdown
+        image: {
+            dropdown: ['insertImage', 'upload'],
+            ico: 'insertImage'
+        }
+    },
+    btns: [
+        ['formatting'],
+        ['strong', 'em', 'del'],
+        ['link'],
+        ['image'],
+        ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull']
+
+    ],
+    plugins: {
+        // Add imagur parameters to upload plugin for demo purposes
+        upload: {
+            serverPath: 'https://api.imgur.com/3/image',
+            fileFieldName: 'image',
+            headers: {
+                'Authorization': 'Client-ID 21ca8b31c6adc09'
+            },
+            urlPropertyName: 'data.link'
+        }
+    }
+});
+       
+</script>
+
+<br/><button id="Send">Chat</button>
+</div>
+<div id='messagesDiv'></div>
+
+
+
+    <script>
+
+
+	var myDataRef = firebase.database().ref('tobaochat');
+
+		$("#Send").click(function () {
+			var name = $('#nameInput').val();
+			var text = $('#messageInput').val();
+			if($('#messageInput').val()!="" && $('#nameInput').val()!=""){
+				myDataRef.push({name: name,text: text});
+			}
+			$('#messageInput').trumbowyg('empty');
+
+	});
+
+
+myDataRef.limitToLast(15).on("child_added", function(snapshot) {
+    var newComment = snapshot.val();
+    // HTML format
+    var html = "<div class='list1'>";
+    html += "<i class='fa fa-user-circle'></i> <b>" + newComment.name + "</b>: ";
+
+    html += "" + newComment.text  + "</div>";
+    
+    $("#messagesDiv").prepend(html);
+});
+
+
+
+
+
+    </script>
