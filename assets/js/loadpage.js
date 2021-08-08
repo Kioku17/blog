@@ -22,7 +22,6 @@ url: link
 $.ajax(request).done(function(data){
 var title = data.split('<title>')[1].split('</title>')[0];
 var body = data.split('<BlogPage>')[1].split('</BlogPage>')[0];
-$(".effect").show("slow");$(".effect").hide("slow");
 if(pop != true){
 var state = {
 name: link,
