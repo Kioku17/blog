@@ -1,11 +1,8 @@
 $('body').on("click", 'a', function(loadpage) {
-$(".effect").show("slow");
 loadpage.preventDefault();
 var url = $(this).attr('href');
 BlogPage(url, false);
 });
-
-$(".effect").hide("slow");
 
 var state = {
 name: location.href,
@@ -25,7 +22,6 @@ url: link
 $.ajax(request).done(function(data){
 var title = data.split('<title>')[1].split('</title>')[0];
 var body = data.split('<BlogPage>')[1].split('</BlogPage>')[0];
-$(".effect").hide("slow");
 if(pop != true){
 var state = {
 name: link,
@@ -40,5 +36,3 @@ $('html,body').animate({scrollTop:0},200);
 $("BlogPage").html(body);
 })
 }
-
-$(".effect").hide("slow");
