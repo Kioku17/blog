@@ -1,4 +1,6 @@
 $('body').on("click", 'a', function(loadpage) {
+$(".loadPage").show("slow"); 
+$(".displayPage").hide("slow");
 loadpage.preventDefault();
 var url = $(this).attr('href');
 BlogPage(url, false);
