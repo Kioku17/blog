@@ -5,6 +5,8 @@ var url = $(this).attr('href');
 BlogPage(url);
 });
 
+$(".effect").hide("slow");
+
 var state = {
 name: location.href,
 page: document.title
