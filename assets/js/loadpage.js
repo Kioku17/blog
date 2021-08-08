@@ -40,3 +40,5 @@ $('html,body').animate({scrollTop:0},200);
 $("BlogPage").html(body);
 })
 }
+
+$(".effect").hide("slow");
