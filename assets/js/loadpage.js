@@ -2,7 +2,7 @@ $('body').on("click", 'a', function(loadpage) {
 $(".effect").show("slow");
 loadpage.preventDefault();
 var url = $(this).attr('href');
-BlogPage(url);
+BlogPage(url, false);
 });
 
 $(".effect").hide("slow");
