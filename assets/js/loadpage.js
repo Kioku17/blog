@@ -1,4 +1,4 @@
-$('body').on("click", 'a#loadpage', function(loadpage) {
+$('body').on("click", 'a', function(loadpage) {
 loadpage.preventDefault();
 var url = $(this).attr('href');
 BlogPage(url);
