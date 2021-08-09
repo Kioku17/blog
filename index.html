@@ -1,1 +1,43 @@
-Có cái nịt nhé =))
+---
+layout: default
+---
+
+         <div class="site-inner">
+            <div class="content-sidebar-wrap">
+               <main class="content">
+						{% for post in paginator.posts %}
+                  <article itemscope itemtype="https://schema.org/CreativeWork">
+                     <header class="entry-header">
+                        <h2 class="entry-title" itemprop="headline"><a class="entry-title-link" rel="bookmark" href="{{ post.url }}">{{ post.title }}</a></h2>
+                        <p class="entry-meta"><time class="entry-time" itemprop="datePublished" datetime="{{ post.date }}">{{ post.date | date: "%d/%m/%Y" }}</time> <span class="entry-author" itemprop="author" itemscope itemtype="https://schema.org/Person"><a href="/author" class="entry-author-link" itemprop="url" rel="author"><span class="entry-author-name" itemprop="name">{{ site.author }}</span></a></span> </p>
+                     </header>
+                     <div class="entry-content" itemprop="text">
+                        <a class="entry-image-link" href="{{ post.url }}" aria-hidden="true">
+								<img width="150" height="150" src="https://images.weserv.nl/?url={% if post.img %}{{ post.img }}{% else %}https://i.imgur.com/RCiUEv6.png{% endif %}&w=150&h=150&t=square&q=90" class="alignleft post-image entry-image" alt="{{ post.title }}" />
+                        </a>
+                        <p>{{ post.content | strip_html | truncatewords: 70 }}</p>
+                     </div>
+                  </article>
+						{% endfor %}
+								 
+                  {% if paginator.total_pages > 1 %}
+                  <div class="archive-pagination pagination">
+                     <ul>
+                        {% if paginator.previous_page %}
+								 <li class="pagination-previous"><a href="{{ paginator.previous_page_path | prepend: site.baseurl | replace: '//', '/' }}">&#x000AB;</a></li>{% else %}{% endif %}
+                        {% for page in (1..paginator.total_pages) %}
+                        {% if page == paginator.page %}
+                        <li class="active"><a href="{{ site.paginate_path | prepend: site.baseurl | replace: '//', '/' | replace: ':num', page }}" aria-label="Current page" aria-current="page"><span class="screen-reader-text">Page </span>{{ page }}</a></li>
+                        <span class="active"></span>
+                        {% elsif page == 1 %}
+                        <li><a href="/"><span class="screen-reader-text">Page </span>{{ page }}</a></li>
+                        {% else %}
+                        <li><a href="{{ site.paginate_path | prepend: site.baseurl | replace: '//', '/' | replace: ':num', page }}"><span class="screen-reader-text">Page </span>{{ page }}</a></li>
+                        {% endif %}{% endfor %}
+                        {% if paginator.next_page %}
+							   <li class="pagination-next"><a href="{{ paginator.next_page_path | prepend: site.baseurl | replace: '//', '/' }}">&#x000BB;</a></li>{% else %}{% endif %} 
+                     </ul>
+                  </div>		 
+                  </div>
+                  {% endif %} 
+               </main>
