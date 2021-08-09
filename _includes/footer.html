@@ -1,18 +1,9 @@
-<div itemscope itemtype="https://schema.org/WPFooter" style="background-color:#242c33;color:#333;padding-top:5px;font-size:13px;padding-bottom:5px;border-bottom:3px dashed #1b1e25"></div><div style="text-align:center;color:#fff;padding-bottom:5px;padding-top:5px;background-color:#1b1e25;margin-top:5px dashed #ffffff;padding-left:5px; -webkit-border-bottom-right-radius:1px;-webkit-border-bottom-left-radius:1px;border-bottom:0px solid #39434D;">2020 <i class="fa fa-copyright"></i>  Rains Blog<br/></div>
-{% if site.ga_tracking_id %}
-<!-- Google Analytics -->
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-  ga('create', '{{ site.ga_tracking_id }}', 'auto');
-  ga('send', 'pageview', {
-    'page': '{{ page.url }}',
-    'title': '{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}'
-  });
+</div></div>
+<div style="background-color:#586776;color:#333;padding-top:5px;font-size:13px;padding-bottom:5px;border-bottom:3px dashed #1b1e25"></div><div style="text-align:center;color:#fff;padding-bottom:5px;padding-top:5px;background-color:#1b1e25;margin-top:5px dashed #ffffff;padding-left:5px; -webkit-border-bottom-right-radius:1px;-webkit-border-bottom-left-radius:1px;border-bottom:0px solid #39434D;"><i class="fa fa-copyright"></i> {{  site.time | date: '%Y' }} <i class="fa fa-free-code-camp" aria-hidden="true"></i> {{ site.title }}. Built width Jekyll.
+</div>
+
+<script>window.onscroll=function(){myFunction()};var header=document.getElementById("oubliez"),sticky=header.offsetTop;function myFunction(){window.pageYOffset>sticky?header.classList.add("position"):header.classList.remove("position")};
 </script>
-{% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.3.4/lib/darkmode-js.min.js"></script> 
 <script> 

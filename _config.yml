@@ -14,35 +14,13 @@ author: kioku17
 avatar: https://i.imgur.com/GzMbPAW.jpg
 quotes: "Tôi đang bắt đầu, với tất cả những gì vốn có..."
 description: 
-  I love Blogspot.
+  I love blogger!
 
 baseurl: "/" 
 url: "https://root.rains.gq" 
-
-# Gitalk
-gitalk:
-  enable: true    #Gitalk
-  clientID: d74766f8c5457333c754
-  clientSecret: da69604c1b7314adbed5b098cba440ef7aeaa335
-  repo: kioku17.github.io
-  owner: kioku17
-  admin: kioku17
-  distractionFreeMode: true 
 
 # Build settings
 markdown: kramdown
 permalink: /:title
 paginate: 10
 paginate_path: "/page-:num/"
-
-
-# Disqus comments
-# disqus_shortname: XXXX
-
-# Google analytics
-# ga_tracking_id: "UA-XXXX-1"
-
-
-comment-read: https://docs.google.com/spreadsheets/d/1vYiR1EGI8OTHDgp3IZ8WrTbf_hnA7Mni-sKQXRm7R_A
-comment-post: https://docs.google.com/forms/d/e/1FAIpQLSe10zSievDubX7L8Lkp39eb6dLxFxRbmb7HBqrk8kJD_oXH9Q
-comment-post-fields: [ entry.404787257, entry.2003036143, entry.432128806]

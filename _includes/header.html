@@ -1,14 +1,16 @@
- <div style="background-image: url('https://i.imgur.com/7C1Yh7u.jpg');color:#fff;padding:5px;border-style: solid; border-color:#1b1b2f;text-align: center;" itemscope itemtype="https://schema.org/WPHeader">
-<a href="/"><img src="http://dorew.viwap.com/images/m.png" height="60" width="60"></a>
-<div itemprop="headline">{{ site.title }} - <span itemprop="description">{{ site.subtitle }}</span></div>
+<div class="menu" style="text-align: center; padding: 15px;">
+  <a href="/">
+  <img src="https://i.imgur.com/5iXHxAB.png"/></a>
+  <br/>{{ site.title }} - {{ site.subtitle }}
+</div>
+<div class="header" style="text-align:center" id="oubliez">
+   <a href="/" title="Trang chủ"><i style="padding:5px" class="fa fa-home fa-2x" aria-hidden="true"></i></a>
+  {% for my_page in site.pages %}
+   {% if my_page.show_in_nav %}
+      <a href="{{ my_page.url | prepend: site.baseurl }}" title="{{ my_page.title }}"><i style="padding:5px" class="fa {{ my_page.fa_icon }} fa-2x" aria-hidden="true"></i></a>
+   {% endif %}
+  {% endfor %}
+   <a href="https://file.oubliez.gq" title="Kho lưu trữ"><i style="padding:5px" class="fa fa-cloud-upload fa-2x" aria-hidden="true"></i></a>
 </div>
 
-<div style="background-image: linear-gradient(to bottom, #0a0b0c, #0f1012, #131517, #17181c, #1a1c20);padding-bottom:4px;border-color:#ffffff;" align="center"> 
-<table width="100%" cellpadding="0" cellspacing="0">  
-<tr> <td width="33%"><div style="border-width:3px;border-color:#ffffff;padding-left:2px;padding:8px;" align="center"><a href="/upanh/" title="Up ảnh" style="color:#FFFFFF"> <b><i class="fa fa-bars"></i></b> </a> </div> </td> 
-<td width="34%"> <div style="background-color:#ffffff;border-width:1px;border-color:#fa6c5f;padding:8px;" align="center"> <a href="/" title="Trang Chủ"><b><i class="fa fa-home" aria-hidden="true"></i></b></a></div></td>
-<td width="33%"><div style="border-width:3px;border-color:#ffffff;padding-left:2px;padding:8px;" align="center"><a href="/search/" title="Tìm kiếm" style="color:#FFFFFF;"><b><i class="fa fa-search" aria-hidden="true"></i></b></a></div></td>
-</tr>
- </table>
-</div>
-<hr style="border-top:#f0b400 solid 2px;">
+<div class="main">
