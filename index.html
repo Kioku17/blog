@@ -1,25 +1,20 @@
 ---
 layout: default
 ---
+<div class="phdr"><i class="fa fa-book"></i> Mới cập nhật <a href="/contribute.html" style="float:right" title="Viết bài mới"><button type="submit" name="submit">Viết bài mới</button></a></div>
 
-         <div class="site-inner">
-            <div class="content-sidebar-wrap">
-               <main class="content">
-						{% for post in paginator.posts %}
-                  <article itemscope itemtype="https://schema.org/CreativeWork">
-                     <header class="entry-header">
-                        <h2 class="entry-title" itemprop="headline"><a class="entry-title-link" rel="bookmark" href="{{ post.url }}">{{ post.title }}</a></h2>
-                        <p class="entry-meta"><time class="entry-time" itemprop="datePublished" datetime="{{ post.date }}">{{ post.date | date: "%d/%m/%Y" }}</time> <span class="entry-author" itemprop="author" itemscope itemtype="https://schema.org/Person"><a href="/author" class="entry-author-link" itemprop="url" rel="author"><span class="entry-author-name" itemprop="name">{{ site.author }}</span></a></span> </p>
-                     </header>
-                     <div class="entry-content" itemprop="text">
-                        <a class="entry-image-link" href="{{ post.url }}" aria-hidden="true">
-								<img width="150" height="150" src="https://images.weserv.nl/?url={% if post.img %}{{ post.img }}{% else %}https://i.imgur.com/RCiUEv6.png{% endif %}&w=150&h=150&t=square&q=90" class="alignleft post-image entry-image" alt="{{ post.title }}" />
-                        </a>
-                        <p>{{ post.content | strip_html | truncatewords: 70 }}</p>
-                     </div>
-                  </article>
-						{% endfor %}
-								 
+{% assign min = 1 %}
+{% assign max = 4 %}
+{% assign diff = max | minus: min %}
+{% assign randomNumber = "now" | date: "%N" | modulo: diff | plus: min %}
+
+{% for post in paginator.posts %}
+<div class="list1">
+  <span class="topic cat{{ randomNumber }}"> {{ post.date | date: "%d/%m/%Y" }} </span>
+  <a href="{{ post.url | prepend: site.baseurl }}"> {{ post.title }}</a>
+</div>
+{% endfor %}
+
                   {% if paginator.total_pages > 1 %}
                   <div class="archive-pagination pagination">
                      <ul>
