@@ -746,7 +746,7 @@
                 }(), Ge()
         },
         38: function(e) {
-            e.exports = JSON.parse('{"b":"Máy lạnh Cloud, Máy lạnh nhỏ di động","a":{"url":"https://www.all4-u.xyz","email":"huuphuong99x@gmail.com","name":"Yakito"},"c":{"type":"git","url":"https://www.all4-u.xyz"}}')
+            e.exports = JSON.parse('{"b":"Máy lạnh Cloud, Máy lạnh nhỏ di động","a":{"url":"https://oubluez.gq","email":"","name":"Oubliez"},"c":{"type":"git","url":"https://oubliez.gq"}}')
         }
     },
     [
