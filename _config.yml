@@ -24,3 +24,8 @@ markdown: kramdown
 permalink: /:title
 paginate: 10
 paginate_path: "/page-:num/"
+
+# Google sheets
+comment-read: https://docs.google.com/spreadsheets/d/1gB6u7R_qmxbEcv2xzXuuMySyV5rNq5ZqVdYR0BGqZ2s
+comment-post: https://docs.google.com/forms/d/e/1FAIpQLSd9wojj3EReQtcGmVgI1Gonp2WAz-78U5WS1kKOkf8C-HGrPg
+comment-post-fields: [entry.1445648921, entry.1445232994]
